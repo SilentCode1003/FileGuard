@@ -5,3 +5,13 @@ declare module 'express-session' {
     user?: Omit<Users, 'userPassword'>
   }
 }
+
+declare global {
+  namespace Express {
+    interface Request {
+      context: {
+        user?: Omit<Users, 'userPassword'>
+      }
+    }
+  }
+}
