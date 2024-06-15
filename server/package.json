@@ -1,0 +1,46 @@
+{
+  "name": "server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsup src/index.ts",
+    "start": "node dist/index.cjs",
+    "dev": "tsup src/index.ts --watch --onSuccess \"node dist/index.cjs\"",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "db:migrate": "prisma migrate dev && prisma db seed",
+    "db:reset": "prisma migrate reset"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/express-session": "^1.18.0",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^20.14.2",
+    "prettier": "^3.3.2",
+    "prisma": "^5.15.0",
+    "tsup": "^8.1.0",
+    "tsx": "^4.15.5",
+    "typescript": "^5.4.5"
+  },
+  "tsup": {
+    "clean": true
+  },
+  "dependencies": {
+    "@prisma/client": "5.15.0",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "morgan": "^1.10.0",
+    "nanoid": "^5.0.7",
+    "winston": "^3.13.0",
+    "winston-daily-rotate-file": "^5.0.0",
+    "zod": "^3.23.8"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
+}
