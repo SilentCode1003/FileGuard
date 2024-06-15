@@ -60,10 +60,6 @@ const SideBar = () => {
     }
   }, [isTab])
 
-  useEffect(() => {
-    isTab && setIsOpen(false)
-  }, [pathname])
-
   const companyOne = [
     {
       name: '5L Solutions',
@@ -119,21 +115,15 @@ const SideBar = () => {
       <motion.div
         variants={sidebarAnimation}
         animate={isOpen ? 'open' : 'closed'}
-        className="bg-white text-gray shadow-xl z-[999] w-[16rem] max-w-[16rem]
-      h-screen overflow-hidden md:relative fixed"
+        className="bg-white text-gray shadow-xl z-[999] w-[16rem] max-w-[16rem] h-screen overflow-hidden md:relative fixed"
       >
         <div className="flex items-center gap-2 font-medium border-b border-slate-300 mx-3">
-          <img src={Logo} alt="Logo" width={55} />
-          <span className="ml-1 text-xl whitespace-pre">File Guard</span>
+          <img src={Logo} alt="Logo" width={125} className="mx-auto md:p-2" />
         </div>
 
         {/* Menu */}
         <div className="flex flex-col h-screen">
-          <ul
-            className="whitespace-pre px-2.5 text-[1rem] py-5 flex flex-col 
-          gap-1 font-medium overflow-x-hidden scrollbar-thin scrollbar-track-white
-          scrollbar-thumb-slate-100 md:h-80% max-h-[80%]"
-          >
+          <ul className="whitespace-pre px-2.5 text-[1rem] py-2 flex flex-col gap-1 font-medium overflow-x-hidden scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-100 md:h-80% max-h-[80%]">
             <li>
               <NavLink to="/" className="link">
                 <AiOutlineAppstore size={23} className="min-w-max" />
