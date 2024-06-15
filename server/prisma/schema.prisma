@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["omitApi"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Permissions {
+  permId       String    @id @map("perm_id") @db.VarChar(100)
+  permUrId     String    @map("perm_ur_id") @db.VarChar(100)
+  userRoles    UserRoles @relation(fields: [permUrId], references: [urId])
+  permFolderId String    @map("perm_folder_id") @db.VarChar(100)
+  // TODO: relation to Folders model
+  permIsActive Boolean   @default(true) @map("perm_is_active")
+}
+
+model UserRoles {
+  urId        String        @id @map("ur_id") @db.VarChar(100)
+  urName      String        @unique @map("ur_name") @db.VarChar(60)
+  urIsActive  Boolean       @default(true) @map("ur_is_active")
+  Permissions Permissions[]
+  Users       Users[]
+}
+
+model Users {
+  userId       String    @id @map("user_id") @db.VarChar(100)
+  userFullname String    @map("user_fullname") @db.VarChar(60)
+  userUsername String    @unique @map("user_username") @db.VarChar(60)
+  userPassword String    @map("user_password") @db.VarChar(60)
+  userRoleId   String    @map("user_role_id") @db.VarChar(60)
+  userRole     UserRoles @relation(fields: [userRoleId], references: [urId])
+  userIsActive Boolean   @default(true) @map("user_is_active")
+}
