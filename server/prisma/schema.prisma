@@ -40,6 +40,7 @@ model Users {
   userRole     UserRoles @relation(fields: [userRoleId], references: [urId])
   userIsActive Boolean   @default(true) @map("user_is_active")
   userLogs     UserLogs[]
+  files Files[]
 }
 
 model Files {
@@ -51,6 +52,7 @@ model Files {
   createdAt DateTime @default(now())
   folderFiles FolderFiles[]
   fileContents FileContents[]  
+  user Users @relation(fields: [fileUserId], references: [userId])
 }
 
 model Folders {
