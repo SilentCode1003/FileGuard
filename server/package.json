@@ -7,7 +7,9 @@
     "build": "tsup src/index.ts",
     "start": "node dist/index.cjs",
     "dev": "tsup src/index.ts --watch --onSuccess \"node dist/index.cjs\"",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "db:migrate": "prisma migrate dev && prisma db seed",
+    "db:reset": "prisma migrate reset"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
