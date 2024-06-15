@@ -27,8 +27,8 @@ model UserRoles {
   urId        String        @id @map("ur_id") @db.VarChar(100)
   urName      String        @unique @map("ur_name") @db.VarChar(60)
   urIsActive  Boolean       @default(true) @map("ur_is_active")
-  Permissions Permissions[]
-  Users       Users[]
+  permissions Permissions[]
+  users       Users[]
 }
 
 model Users {
@@ -39,4 +39,70 @@ model Users {
   userRoleId   String    @map("user_role_id") @db.VarChar(60)
   userRole     UserRoles @relation(fields: [userRoleId], references: [urId])
   userIsActive Boolean   @default(true) @map("user_is_active")
+  userLogs     UserLogs[]
+}
+
+model Files {
+  fileId       String    @id @map("file_id") @db.VarChar(100)
+  fileUserId    String    @map("file_user_id") @db.VarChar(100)
+  fileName     String    @map("file_name") @db.Text
+  filePath     String    @map("file_path") @db.Text
+  fileBase     Bytes    @map("file_base") @db.Blob
+  createdAt DateTime @default(now())
+  folderFiles FolderFiles[]
+  fileContents FileContents[]  
+}
+
+model Folders {
+  folderId       String    @id @map("folder_id") @db.VarChar(100)
+  folderName     String    @map("folder_name") @db.Text
+  folderPath     String    @map("folder_path") @db.Text
+  folderParentId String?    @map("folder_parent_id") @db.VarChar(100) 
+  folderUserId   String    @map("folder_user_id") @db.VarChar(100)
+  folderDepth    Int       @map("folder_depth") @db.Int
+  createdAt DateTime @default(now())
+  folderFiles FolderFiles[]
+}
+
+model FolderFiles {
+  ffId String    @id @map("ff_id") @db.VarChar(100)
+  ffFolderId String    @map("ff_folder_id") @db.VarChar(100)
+  ffFileId String    @map("ff_file_id") @db.VarChar(100)
+  folders Folders @relation(fields: [ffFolderId], references: [folderId])
+  files Files @relation(fields: [ffFileId], references: [fileId])
+}
+
+model Companies {
+  compId       String    @id @map("comp_id") @db.VarChar(100)
+  compName     String    @map("comp_name") @db.Text
+  companyDepartments CompanyDepartments[]
+}
+
+model Departments {
+  deptId       String    @id @map("dept_id") @db.VarChar(100)
+  deptName     String    @map("dept_name") @db.VarChar(60)
+  companyDepartments CompanyDepartments[]
+}
+
+model CompanyDepartments {
+  cdId String    @id @map("cd_id") @db.VarChar(100)
+  cdCompId String    @map("cd_comp_id") @db.VarChar(100)
+  cdDeptId String    @map("cd_dept_id") @db.VarChar(100)
+  companies Companies @relation(fields: [cdCompId], references: [compId])
+  departments Departments @relation(fields: [cdDeptId], references: [deptId])
+}
+
+model UserLogs {
+  ulId       String    @id @map("ul_id") @db.VarChar(100)
+  ulUserId    String    @map("ul_user_id") @db.VarChar(100)
+  ulDescription String    @map("ul_description") @db.Text
+  createdAt DateTime @default(now())
+  user Users @relation(fields: [ulUserId], references: [userId])
+}
+
+model FileContents{
+  fcId       String    @id @map("fc_id") @db.VarChar(100)
+  fcFileId String    @map("fc_file_id") @db.VarChar(100)
+  fc_content String    @map("fc_content") @db.LongText
+  file Files @relation(fields: [fcFileId], references: [fileId])
 }
