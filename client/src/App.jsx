@@ -1,34 +1,37 @@
-import { useState } from 'react'
-import { apiClient } from './lib/api-client'
+import {
+  Route,
+  createBrowserRouter,
+  createRoutesFromElements,
+  RouterProvider,
+} from 'react-router-dom'
+
+//Layouts
+import MainLayout from './layouts/MainLayout'
+import FullWidthLayout from './layouts/FullWidthLayout'
+
+//Main Layout Contents
+import DashBoard from './pages/DashBoard'
+import Browse from './pages/Browse'
+
+//Full Width Layout Contents
+import Login from './pages/Login'
+import NotFound from './pages/NotFound'
 
 function App() {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-
-    try {
-      await apiClient.post('/auth/login', { username, password })
-    } catch (err) {
-      console.log(err)
-    }
-  }
-
-  return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Username
-          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
-        </label>
-        <label>
-          Password
-          <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </label>
-        <button type="submit">Submit</button>
-      </form>
-    </div>
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <>
+        <Route path="/" element={<MainLayout />}>
+          <Route path="/" element={<DashBoard />} />
+          <Route path="/browse/*" element={<Browse />} />
+        </Route>
+        <Route path="/" element={<FullWidthLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/*" element={<NotFound />} />
+        </Route>
+      </>,
+    ),
   )
+  return <RouterProvider router={router} />
 }
 export default App
