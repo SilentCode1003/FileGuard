@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body{
+    font-family: "Share Tech", sans-serif;
+}
+
+@layer base {
+    h1 {
+        @apply text-xl font-medium capitalize;
+    }
+}
+
+.link {
+    @apply p-2.5 flex rounded-md gap-5 items-center md:cursor-pointer 
+    cursor-default duration-300 font-medium;
+}
