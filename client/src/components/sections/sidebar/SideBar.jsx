@@ -60,6 +60,10 @@ const SideBar = () => {
     }
   }, [isTab])
 
+  // useEffect(() => {
+  //   isTab && setIsOpen(false)
+  // }, [pathname])
+
   const companyOne = [
     {
       name: '5L Solutions',
@@ -86,11 +90,11 @@ const SideBar = () => {
             },
             {
               name: 'Engineer',
-              menus: ['Week 3', 'Week 4'],
+              menus: ['AutoCAD', 'Blue Prints'],
             },
             {
               name: 'Legal',
-              menus: ['Week 3', 'Week 4'],
+              menus: ['Documents', 'Notarized'],
             },
           ],
         },
@@ -123,7 +127,7 @@ const SideBar = () => {
 
         {/* Menu */}
         <div className="flex flex-col h-screen">
-          <ul className="whitespace-pre px-2.5 text-[1rem] py-2 flex flex-col gap-1 font-medium overflow-x-hidden scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-100 md:h-80% max-h-[80%]">
+          <ul className="whitespace-pre px-2.5 text-[1rem] py-2 flex flex-col gap-1 font-medium overflow-x-hidden scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-300 md:h-80% max-h-[80%]">
             <li>
               <NavLink to="/" className="link">
                 <AiOutlineAppstore size={23} className="min-w-max" />

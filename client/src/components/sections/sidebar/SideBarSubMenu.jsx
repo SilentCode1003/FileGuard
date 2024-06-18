@@ -2,9 +2,8 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { IoIosArrowDown } from 'react-icons/io'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { FaFolder } from 'react-icons/fa'
 
-import Folder from '../../utility/Folder'
+import FolderIcon from '../../utility/FolderIcon'
 
 const SideBarSubMenu = ({ data, currentPath = '' }) => {
   const { pathname } = useLocation()
@@ -31,7 +30,7 @@ const SideBarSubMenu = ({ data, currentPath = '' }) => {
         className={`link ${pathname.includes(data.name) && 'text-teal-800 bg-green-100/45'}`}
         onClick={handleToggle}
       >
-        {hasSubMenus && <Folder isOpen={subMenuOpen} />}
+        {hasSubMenus && <FolderIcon isOpen={subMenuOpen} />}
         <p className="flex-1 capitalize">{data.name}</p>
         {hasSubMenus && (
           <IoIosArrowDown className={`transform ${subMenuOpen && 'rotate-180'} duration-200 `} />
@@ -55,7 +54,7 @@ const SideBarSubMenu = ({ data, currentPath = '' }) => {
                     to={`/browse/${currentPath ? `${currentPath}/` : ''}${data.name.replace(/\s+/g, '').toLowerCase()}/${menu.replace(/\s+/g, '').toLowerCase()}`}
                     className="link !bg-transparent capitalize"
                   >
-                    <Folder />
+                    <FolderIcon />
                     {menu.name || menu}
                   </NavLink>
                 )}
