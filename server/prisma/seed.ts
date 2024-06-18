@@ -1,9 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcrypt'
-import { customAlphabet } from 'nanoid'
-
-const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-const nanoid = customAlphabet(alphabet)
+import { nanoid } from '../src/util/nano.util'
 
 const prisma = new PrismaClient()
 
