@@ -11,6 +11,7 @@ tags:
   - auth
   - health
   - files
+  - folders
   - users
   - user-roles
 
@@ -118,6 +119,12 @@ paths:
       tags:
         - files
       summary: Get all files
+
+  /folders:
+    get:
+      tags:
+        - folders
+      summary: Get all users
 
   /users:
     get:
