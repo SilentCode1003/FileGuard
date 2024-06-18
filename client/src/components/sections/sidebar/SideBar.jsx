@@ -60,7 +60,7 @@ const SideBar = () => {
     }
   }, [isTab])
 
-  const companyOne = [
+  const company = [
     {
       name: '5L Solutions',
       menus: [
@@ -86,24 +86,22 @@ const SideBar = () => {
             },
             {
               name: 'Engineer',
-              menus: ['Week 3', 'Week 4'],
+              menus: ['AutoCAD', 'Blue Prints'],
             },
             {
               name: 'Legal',
-              menus: ['Week 3', 'Week 4'],
+              menus: ['Documents', 'Notarized'],
             },
           ],
         },
       ],
     },
-  ]
-
-  const companyTwo = [
     {
       name: 'Cyber Power',
       menus: ['2023 Archives', '2024 Archives'],
     },
   ]
+
   return (
     <>
       <div
@@ -123,7 +121,7 @@ const SideBar = () => {
 
         {/* Menu */}
         <div className="flex flex-col h-screen">
-          <ul className="whitespace-pre px-2.5 text-[1rem] py-2 flex flex-col gap-1 font-medium overflow-x-hidden scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-100 md:h-80% max-h-[80%]">
+          <ul className="whitespace-pre px-2.5 text-[1rem] py-2 flex flex-col gap-1 font-medium overflow-x-hidden scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-300 md:h-80% max-h-[80%]">
             <li>
               <NavLink to="/" className="link">
                 <AiOutlineAppstore size={23} className="min-w-max" />
@@ -134,12 +132,7 @@ const SideBar = () => {
             {/* With Submenu */}
             {(isOpen || isTab) && (
               <div className="border-y py-4 border-slate-300">
-                {companyOne.map((menu) => (
-                  <div key={menu.name}>
-                    <SideBarSubMenu data={menu} />
-                  </div>
-                ))}
-                {companyTwo.map((menu) => (
+                {company.map((menu) => (
                   <div key={menu.name}>
                     <SideBarSubMenu data={menu} />
                   </div>
