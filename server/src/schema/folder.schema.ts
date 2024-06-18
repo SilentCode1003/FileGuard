@@ -7,3 +7,7 @@ export const createFolderSchema = z.object({
   folderUserId: z.string().nanoid(),
   folderDepth: z.number(),
 })
+
+export const getFoldersSchema = z.object({
+  folderPath: z.string().min(1),
+})
