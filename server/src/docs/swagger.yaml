@@ -1,0 +1,110 @@
+openapi: 3.0.0
+info:
+  title: Fileguard API
+  description: Test
+  version: 0.0.1
+
+servers:
+  - url: http://localhost:3000
+
+tags:
+  - auth
+  - user
+
+paths:
+  /auth/me:
+    get:
+      tags:
+        - auth
+      summary: Get current user info
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: User is currently not logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Log in
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/logout:
+    delete:
+      tags:
+        - auth
+      summary: Log out
+      responses:
+        '204':
+          description: Successful operation
+        # '401':
+        #   description: User is currently not logged in
+        #   content:
+        #     application/json:
+        #       schema:
+        #         $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: nanoid
+          example: fjEd9unTgA
+        userFullname:
+          type: string
+          example: John Doe
+        userUsername:
+          type: string
+          example: John Doe
+        userRoleId:
+          format: nanoid
+          example: kjEd9xnTgA
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    SuccessResponse:
+      type: object
+      properties:
+        data:
+          type: object | array
+          description: Any of the schemas
