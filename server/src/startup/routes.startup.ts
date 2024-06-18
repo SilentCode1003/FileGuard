@@ -3,6 +3,7 @@ import { auth } from '../middlewares/auth.middleware'
 import { authRouter } from '../routes/auth.route'
 import { fileRouter } from '../routes/files.route'
 import { healthRouter } from '../routes/health.route'
+import { userRolesRouter } from '../routes/roles.route'
 import { usersRouter } from '../routes/users.route'
 
 export const initRoutes = (app: Express) => {
@@ -11,4 +12,5 @@ export const initRoutes = (app: Express) => {
   app.use('/health', healthRouter)
   app.use('/file', fileRouter)
   app.use('/users', usersRouter)
+  app.use('/user-roles', userRolesRouter)
 }
