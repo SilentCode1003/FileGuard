@@ -18,6 +18,8 @@
 
 1. Start the dev server using `npm run dev`
 2. Be sure to run `npx prisma migrate dev` after every change in _schema.prisma_
+3. Go to http://localhost:3000/api-docs for swagger docs
+4. Sometimes you might want to truncate tables and delete all records in the db. To do that, run `npm run db:reset`
 
 ### Production
 
