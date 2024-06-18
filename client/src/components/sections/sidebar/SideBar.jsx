@@ -100,6 +100,10 @@ const SideBar = () => {
       name: 'Cyber Power',
       menus: ['2023 Archives', '2024 Archives'],
     },
+    {
+      name: 'Fridays Boracay',
+      menus: ['2023 Archives', '2024 Archives'],
+    },
   ]
 
   return (
