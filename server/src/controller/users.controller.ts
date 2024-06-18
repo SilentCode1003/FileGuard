@@ -73,7 +73,7 @@ export const updateUser: RequestHandler = async (req, res) => {
 
 export const toggleUser: RequestHandler = async (req, res) => {
   const validatedBody = await toggleUserSchema.safeParseAsync({
-    userId: req.query.userId,
+    userId: req.params.userId,
   })
 
   if (!validatedBody.success) {
