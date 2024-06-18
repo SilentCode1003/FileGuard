@@ -2,6 +2,8 @@ import { useParams } from 'react-router-dom'
 import { useState, useCallback, useEffect } from 'react' // Added useEffect for initial data
 import { useDropzone } from 'react-dropzone'
 import { nanoid } from 'nanoid'
+import { FaFolderOpen } from 'react-icons/fa6'
+
 import File from '../components/browse/File'
 import Folder from '../components/browse/Folder'
 
@@ -57,15 +59,29 @@ const Browse = () => {
         <input {...getInputProps()} />
       </div>
       <div className="max-h-[41rem] overflow-y-auto scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-300">
-        <div className="items-container grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4 w-full">
-          {items.map((item) =>
-            item.type === 'file' ? (
-              <File key={item.id} file={item} />
-            ) : (
-              <Folder key={item.id} folder={item} />
-            ),
-          )}
-        </div>
+        {items.length === 0 ? (
+          <div className="flex justify-center">
+            <div className="flex-col text-center">
+              <FaFolderOpen size={100} className="text-slate-500 mx-auto my-10" />
+              <p className="text-3xl text-slate-700">No Files in this Folder</p>
+              <p className="text-xl p-10 text-slate-400">
+                Upload files by dragging or selecting files above.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="max-h-[41rem] overflow-y-auto scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-300">
+            <div className="items-container grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4 w-full">
+              {items.map((item) =>
+                item.type === 'file' ? (
+                  <File key={item.id} file={item} />
+                ) : (
+                  <Folder key={item.id} folder={item} />
+                ),
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
