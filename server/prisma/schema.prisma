@@ -48,7 +48,7 @@ model Files {
   fileUserId    String    @map("file_user_id") @db.VarChar(100)
   fileName     String    @map("file_name") @db.Text
   filePath     String    @map("file_path") @db.Text
-  fileBase     Bytes    @map("file_base") @db.Blob
+  fileBase     String    @map("file_base") @db.LongText
   createdAt DateTime @default(now())
   folderFiles FolderFiles[]
   fileContents FileContents[]  
