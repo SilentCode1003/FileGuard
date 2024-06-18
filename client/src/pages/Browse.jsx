@@ -5,23 +5,23 @@ import { nanoid } from 'nanoid'
 import File from '../components/browse/File'
 import Folder from '../components/browse/Folder'
 
-const initialFolders = [
+const initialFiles = [
   { id: nanoid(), name: 'HR', type: 'folder' },
   { id: nanoid(), name: 'Engineer', type: 'folder' },
   { id: nanoid(), name: 'Legal', type: 'folder' },
-]
-
-const initialFiles = [
-  { id: nanoid(), name: 'Sample.pdf', type: 'file' },
-  { id: nanoid(), name: 'Report.docx', type: 'file' },
-  { id: nanoid(), name: 'Fridays Boracay.pdf', type: 'file' },
-  { id: nanoid(), name: 'Fridays Puerto Galera.docx', type: 'file' },
+  { id: nanoid(), name: 'Sample.pdf', type: 'file', extension: 'pdf' },
+  { id: nanoid(), name: 'Report.docx', type: 'file', extension: 'docx' },
+  { id: nanoid(), name: 'Fridays Boracay.pdf', type: 'file', extension: 'pdf' },
+  { id: nanoid(), name: 'Fridays Puerto Galera.docx', type: 'file', extension: 'docx' },
+  { id: nanoid(), name: '2024 Billing.xlsx', type: 'file', extension: 'xlsx' },
+  { id: nanoid(), name: 'new office 2024.jpg', type: 'file', extension: 'jpg' },
+  { id: nanoid(), name: 'db-test.sql', type: 'file', extension: 'sql' },
 ]
 
 const Browse = () => {
   const params = useParams()
   const { '*': path } = params
-  const [items, setItems] = useState([...initialFolders, ...initialFiles])
+  const [items, setItems] = useState([...initialFiles])
 
   const onDrop = useCallback(
     (acceptedFiles) => {
@@ -39,7 +39,7 @@ const Browse = () => {
   const { getRootProps, getInputProps } = useDropzone({ onDrop })
 
   useEffect(() => {
-    setItems([...initialFolders, ...initialFiles])
+    setItems([...initialFiles])
   }, [])
 
   return (
@@ -55,7 +55,7 @@ const Browse = () => {
         <input {...getInputProps()} />
       </div>
       <div className="max-h-[41rem] overflow-y-auto scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-300">
-        <div className="items-container grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4 w-full">
+        <div className="items-container grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4 w-full">
           {items.map((item) =>
             item.type === 'file' ? (
               <File key={item.id} file={item} />
