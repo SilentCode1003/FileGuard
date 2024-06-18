@@ -1,6 +1,10 @@
 import React from 'react'
-import { FaEllipsisVertical } from 'react-icons/fa6'
+import { BsDownload } from 'react-icons/bs'
+import { MdDriveFileRenameOutline } from 'react-icons/md'
+import { MdViewInAr } from 'react-icons/md'
 
+import Dropdown from '../utility/dropdown/Dropdown'
+import DropdownItem from '../utility/dropdown/DropdownItem'
 import FileIcon from '../utility/FileIcon'
 
 const File = ({ file }) => {
@@ -11,9 +15,11 @@ const File = ({ file }) => {
       </div>
       <div className="text-sm truncate basis-7/12">{file.name}</div>
       <div className="flex basis-2/12 justify-center align-middle">
-        <div className="flex rounded-full hover:bg-slate-300/85 w-8 h-8 justify-center">
-          <FaEllipsisVertical size={20} className="my-auto" />
-        </div>
+        <Dropdown>
+          <DropdownItem Icon={MdViewInAr}>View File</DropdownItem>
+          <DropdownItem Icon={BsDownload}>Download</DropdownItem>
+          <DropdownItem Icon={MdDriveFileRenameOutline}>Rename</DropdownItem>
+        </Dropdown>
       </div>
     </div>
   )

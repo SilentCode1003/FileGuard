@@ -1,4 +1,11 @@
-import { FaFilePdf, FaFileWord, FaFileExcel, FaFileImage, FaFileAlt } from 'react-icons/fa'
+import {
+  FaFilePdf,
+  FaFileWord,
+  FaFileExcel,
+  FaFileImage,
+  FaFileAlt,
+  FaFilePowerpoint,
+} from 'react-icons/fa'
 
 const FileIcon = ({ extension }) => {
   switch (extension) {
@@ -8,6 +15,8 @@ const FileIcon = ({ extension }) => {
       return <FaFileWord className="text-sky-700" />
     case 'xlsx':
       return <FaFileExcel className="text-green-600" />
+    case 'pptx':
+      return <FaFilePowerpoint className="text-red-500" />
     case 'png':
     case 'jpg':
     case 'jpeg':
