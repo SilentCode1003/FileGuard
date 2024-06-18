@@ -1,8 +1,8 @@
 import express from 'express'
 import { createFile, getFile } from '../controller/files.controller'
 
-export const fileRouter = express.Router()
+export const filesRouter = express.Router()
 
-fileRouter.get('/', getFile)
+filesRouter.get('/', getFile)
 
-fileRouter.post('/', createFile)
+filesRouter.post('/', createFile)
