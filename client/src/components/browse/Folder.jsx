@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useLocation, useNavigate, NavLink } from 'react-router-dom'
 import { BsDownload } from 'react-icons/bs'
 import { MdDriveFileRenameOutline } from 'react-icons/md'
+import { FaEllipsisVertical } from 'react-icons/fa6'
 
 import Dropdown from '../utility/dropdown/Dropdown'
 import DropdownItem from '../utility/dropdown/DropdownItem'

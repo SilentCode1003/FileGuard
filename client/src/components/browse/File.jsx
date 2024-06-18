@@ -1,7 +1,6 @@
 import React from 'react'
 import { BsDownload } from 'react-icons/bs'
-import { MdDriveFileRenameOutline } from 'react-icons/md'
-import { MdViewInAr } from 'react-icons/md'
+import { MdDriveFileRenameOutline, MdOutlineDriveFileMove, MdViewInAr } from 'react-icons/md'
 
 import Dropdown from '../utility/dropdown/Dropdown'
 import DropdownItem from '../utility/dropdown/DropdownItem'
@@ -19,6 +18,7 @@ const File = ({ file }) => {
           <DropdownItem Icon={MdViewInAr}>View File</DropdownItem>
           <DropdownItem Icon={BsDownload}>Download</DropdownItem>
           <DropdownItem Icon={MdDriveFileRenameOutline}>Rename</DropdownItem>
+          <DropdownItem Icon={MdOutlineDriveFileMove}>Move to</DropdownItem>
         </Dropdown>
       </div>
     </div>
