@@ -31,8 +31,10 @@ const startServer = () => {
   logger.info('Adding routes')
   initRoutes(app)
 
-  logger.info('Adding swagger docs')
-  initDocs(app)
+  if (CONFIG.NODE_ENV === 'development') {
+    logger.info('Adding swagger docs')
+    initDocs(app)
+  }
 
   logger.info('Adding notFoundController')
   app.use(notFoundController)
