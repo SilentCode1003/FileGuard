@@ -17,7 +17,7 @@ const startServer = () => {
   logger.info(`Running application on ${CONFIG.NODE_ENV} environment`)
 
   logger.info('Adding req body json parser')
-  app.use(express.json())
+  app.use(express.json({ limit: '1gb' }))
 
   logger.info('Adding logger middleware')
   app.use(loggerMiddleware)
