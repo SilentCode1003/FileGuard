@@ -60,11 +60,7 @@ const SideBar = () => {
     }
   }, [isTab])
 
-  // useEffect(() => {
-  //   isTab && setIsOpen(false)
-  // }, [pathname])
-
-  const companyOne = [
+  const company = [
     {
       name: '5L Solutions',
       menus: [
@@ -100,14 +96,12 @@ const SideBar = () => {
         },
       ],
     },
-  ]
-
-  const companyTwo = [
     {
       name: 'Cyber Power',
       menus: ['2023 Archives', '2024 Archives'],
     },
   ]
+
   return (
     <>
       <div
@@ -138,12 +132,7 @@ const SideBar = () => {
             {/* With Submenu */}
             {(isOpen || isTab) && (
               <div className="border-y py-4 border-slate-300">
-                {companyOne.map((menu) => (
-                  <div key={menu.name}>
-                    <SideBarSubMenu data={menu} />
-                  </div>
-                ))}
-                {companyTwo.map((menu) => (
+                {company.map((menu) => (
                   <div key={menu.name}>
                     <SideBarSubMenu data={menu} />
                   </div>
