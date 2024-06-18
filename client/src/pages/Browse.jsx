@@ -16,6 +16,7 @@ const initialFiles = [
   { id: nanoid(), name: '2024 Billing.xlsx', type: 'file', extension: 'xlsx' },
   { id: nanoid(), name: 'new office 2024.jpg', type: 'file', extension: 'jpg' },
   { id: nanoid(), name: 'db-test.sql', type: 'file', extension: 'sql' },
+  { id: nanoid(), name: 'june-2024-meeting.pptx', type: 'file', extension: 'pptx' },
 ]
 
 const Browse = () => {
@@ -26,10 +27,11 @@ const Browse = () => {
   const onDrop = useCallback(
     (acceptedFiles) => {
       const newFiles = acceptedFiles.map((file) => ({
-        id: uuidv4(),
+        id: nanoid(),
         name: file.name,
         type: 'file',
         file: file,
+        extension: file.name.split('.').pop(),
       }))
       setItems([...items, ...newFiles])
     },
