@@ -142,7 +142,7 @@ export const toggleUserRoleById: RequestHandler = async (req, res, next) => {
         case 'P2002':
           return res.status(400).json({ message: 'User role already exists' })
         case 'P2025':
-          return res.status(400).json({ message: 'User role to delete not found' })
+          return res.status(400).json({ message: 'User role to toggle not found' })
         default:
           return res.status(400).json({ message: 'Prisma client error' })
       }
