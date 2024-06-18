@@ -10,6 +10,7 @@ const envSchema = z.object({
   SERVER_LOGGING_LEVEL: z.enum(['fatal', 'error', 'warn', 'http', 'info', 'debug', 'trace']),
   CLIENT_ORIGIN: z.string(),
   DATABASE_URL: z.string(),
+  MONGODB_URL: z.string(),
 })
 
 const validatedEnv = envSchema.safeParse(process.env)
@@ -25,4 +26,5 @@ export const CONFIG = {
   SERVER_IS_HTTPS: validatedEnv.data.SERVER_IS_HTTPS,
   SERVER_LOGGING_LEVEL: validatedEnv.data.SERVER_LOGGING_LEVEL,
   CLIENT_ORIGIN: validatedEnv.data.CLIENT_ORIGIN,
+  MONGODB_URL: validatedEnv.data.MONGODB_URL,
 } as const
