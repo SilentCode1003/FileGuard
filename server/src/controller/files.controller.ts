@@ -88,6 +88,24 @@ export const uploadFile: RequestHandler = async (req, res) => {
       createFolder(documentTypeFolder)
 
       decodeBase64ToFile(filecontent, `${documentTypeFolder}/${filename}`)
+
+      await prisma.$transaction(async (prisma) => {
+        const newFileId = nanoid()
+        const newFile = await prisma.files.create({
+          data: {
+            fileBase: filecontent,
+            fileId: newFileId,
+            fileName: filename,
+            filePath: documentTypeFolder,
+            fileUserId: 'U6MDlGyfG0fx1h1i09eeV',
+          },
+          omit: {
+            fileBase: true,
+          },
+        })
+  
+       
+      })
     } else {
       console.log('Incorrect Fileame!', filename)
     }
