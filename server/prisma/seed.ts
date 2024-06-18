@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt'
 import { customAlphabet } from 'nanoid'
 
 const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-const nanoid = customAlphabet(alphabet, 10)
+const nanoid = customAlphabet(alphabet)
 
 const prisma = new PrismaClient()
 
