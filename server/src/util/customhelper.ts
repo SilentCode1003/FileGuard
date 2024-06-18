@@ -2,7 +2,7 @@ import fs from "fs";
 
 export const createFolder = (dir:any) => {
     //console.log(`Create folder: ${dir}`);
-    // fs.mkdirSync(dir, { recursive: true });
+    fs.mkdirSync(dir, { recursive: true });
   
     if (fs.existsSync(dir)) {
       //console.log(`Path exist: ${dir}`);
