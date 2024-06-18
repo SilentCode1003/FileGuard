@@ -9,7 +9,10 @@ servers:
 
 tags:
   - auth
-  - user
+  - health
+  - files
+  - users
+  - user-roles
 
 paths:
   /auth/me:
@@ -23,7 +26,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
         '401':
           description: User is currently not logged in
           content:
@@ -36,6 +42,7 @@ paths:
         - auth
       summary: Log in
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -45,13 +52,19 @@ paths:
                   type: string
                 password:
                   type: string
+              required:
+                - username
+                - password
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
         '400':
           description: Invalid request body
           content:
@@ -72,12 +85,220 @@ paths:
       responses:
         '204':
           description: Successful operation
-        # '401':
-        #   description: User is currently not logged in
-        #   content:
-        #     application/json:
-        #       schema:
-        #         $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: User is currently not logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /health:
+    get:
+      tags:
+        - health
+      summary: Get system health stats
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Health'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /files:
+    get:
+      tags:
+        - files
+      summary: Get all files
+
+  /users:
+    get:
+      tags:
+        - users
+      summary: Get all users
+
+  /user-roles:
+    get:
+      tags:
+        - user-roles
+      summary: Get all user roles
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserRole'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - user-roles
+      summary: Create a user role
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                urName:
+                  type: string
+              required:
+                - urName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserRole'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /user-roles/{userRoleId}:
+    get:
+      tags:
+        - user-roles
+      summary: Get a user roles
+      parameters:
+        - name: userRoleId
+          in: path
+          description: ID of UserRole to return
+          required: true
+          schema:
+            type: string
+            format: nanoid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserRole'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - user-roles
+      summary: Update a user role
+      parameters:
+        - name: userRoleId
+          in: path
+          description: ID of UserRole to update
+          required: true
+          schema:
+            type: string
+            format: nanoid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                urName:
+                  type: string
+              required:
+                - urName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserRole'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /user-roles/{userRoleId}/toggle:
+    put:
+      tags:
+        - user-roles
+      summary: Toggle user role isActive state
+      parameters:
+        - name: userRoleId
+          in: path
+          description: ID of UserRole to toggle
+          required: true
+          schema:
+            type: string
+            format: nanoid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserRole'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   schemas:
@@ -87,7 +308,7 @@ components:
         userId:
           type: string
           format: nanoid
-          example: fjEd9unTgA
+          example: aofJcp3aUpuQ1m4QXbZHN
         userFullname:
           type: string
           example: John Doe
@@ -95,8 +316,34 @@ components:
           type: string
           example: John Doe
         userRoleId:
+          type: string
           format: nanoid
-          example: kjEd9xnTgA
+          example: aofJcp3aUpuQ1m4QXbZHN
+        userIsActive:
+          type: boolean
+    Health:
+      type: object
+      properties:
+        uptime:
+          type: number
+          format: float
+        message:
+          type: string
+        date:
+          type: string
+          format: date-time
+    UserRole:
+      type: object
+      properties:
+        urId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        urName:
+          type: string
+          example: admin
+        urIsActive:
+          type: boolean
     ErrorResponse:
       type: object
       properties:
@@ -106,5 +353,6 @@ components:
       type: object
       properties:
         data:
-          type: object | array
-          description: Any of the schemas
+          oneOf:
+            - $ref: '#/components/schemas/User'
+            - $ref: '#/components/schemas/Health'
