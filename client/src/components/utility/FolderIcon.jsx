@@ -1,8 +1,8 @@
-import { FaFolder, FaFolderOpen } from 'react-icons/fa'
+import { FcFolder, FcOpenedFolder } from 'react-icons/fc'
 
-const FolderIcon = ({ isOpen, size = 23 }) => {
-  const Icon = isOpen ? FaFolderOpen : FaFolder
-  return <Icon size={size} className="min-w-max text-yellow-400/90" />
+const FolderIcon = ({ isOpen, size = 25 }) => {
+  const Icon = isOpen ? FcOpenedFolder : FcFolder
+  return <Icon size={size} className="min-w-max" />
 }
 
 export default FolderIcon
