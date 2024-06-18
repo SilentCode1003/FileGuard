@@ -2,6 +2,7 @@ import type { RequestHandler } from 'express'
 import { writeFile } from 'fs'
 import { createFileSchema } from '../schema/files.schema'
 import { prisma } from '../db/prisma'
+import{ createFolder, decodeBase64ToFile} from '../util/customhelper.js'
 
 export const getFile: RequestHandler = async (req, res) => {
   try {
@@ -39,5 +40,40 @@ export const createFile: RequestHandler = async (req, res) => {
     return res.status(200).json({ message: 'File created' })
   } catch (err) {
     return res.status(500).json({ error: err })
+  }
+}
+
+export const uploadFile: RequestHandler = async (req ,res) =>{
+  try {
+    const { filename, filecontent } = req.body;
+    const targetFolder = `root/data`;
+    let folders = filename.split("_");
+
+    if (filename.includes("REV")) {
+      console.log("File Revision detected!");
+    }
+
+    if (folders.length > 4) {
+      console.log(folders[0], folders[1], folders[2], folders[3]);
+      let companyFolder = `${targetFolder}/${folders[0]}`;
+      let yearOrArchive = `${companyFolder}/${folders[1]}`;
+      let departmentFolder = `${yearOrArchive}/${folders[2]}`;
+      let documentTypeFolder = `${departmentFolder}/${folders[3]}`;
+
+      createFolder(targetFolder);
+      createFolder(companyFolder);
+      createFolder(yearOrArchive);
+      createFolder(departmentFolder);
+      createFolder(documentTypeFolder);
+
+      decodeBase64ToFile(filecontent, `${documentTypeFolder}/${filename}`);
+    } else {
+      console.log("Incorrect Fileame!", filename);
+    }
+
+    res.status(200).send({ msg: "Upload Success" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ msg: error });
   }
 }
