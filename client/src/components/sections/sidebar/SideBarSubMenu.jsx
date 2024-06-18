@@ -8,13 +8,14 @@ import FolderIcon from '../../utility/FolderIcon'
 const SideBarSubMenu = ({ data, currentPath = '' }) => {
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const [subMenuOpen, setSubMenuOpen] = useState(false) // State for current submenu
-  const hasSubMenus = data.menus && data.menus.length > 0 // Check if submenu exists
+  const [subMenuOpen, setSubMenuOpen] = useState(false)
+  const hasSubMenus = data.menus && data.menus.length > 0
 
-  // Construct full path
+  const validatedCurrentPath = currentPath.startsWith('/') ? currentPath.slice(1) : currentPath
+
   let fullPath = '/browse'
-  if (currentPath) {
-    fullPath += `/${currentPath}`
+  if (validatedCurrentPath) {
+    fullPath += `/${validatedCurrentPath}`
   }
   fullPath += `/${data.name.replace(/\s+/g, '').toLowerCase()}`
 
@@ -22,13 +23,22 @@ const SideBarSubMenu = ({ data, currentPath = '' }) => {
     e.preventDefault()
     setSubMenuOpen((prev) => !prev)
     navigate(fullPath)
+    console.log(fullPath)
   }
 
   return (
     <>
       <li
         className={`link ${pathname.includes(data.name) && 'text-teal-800 bg-green-100/45'}`}
-        onClick={handleToggle}
+        onClick={
+          hasSubMenus
+            ? handleToggle
+            : (e) => {
+                e.preventDefault()
+                navigate(fullPath)
+                console.log(fullPath)
+              }
+        }
       >
         {hasSubMenus && <FolderIcon isOpen={subMenuOpen} />}
         <p className="flex-1 capitalize">{data.name}</p>
@@ -47,11 +57,11 @@ const SideBarSubMenu = ({ data, currentPath = '' }) => {
                 {menu.menus ? (
                   <SideBarSubMenu
                     data={menu}
-                    currentPath={`${currentPath}/${data.name.replace(/\s+/g, '').toLowerCase()}`}
+                    currentPath={`${validatedCurrentPath}/${data.name.replace(/\s+/g, '').toLowerCase()}`}
                   />
                 ) : (
                   <NavLink
-                    to={`/browse/${currentPath ? `${currentPath}/` : ''}${data.name.replace(/\s+/g, '').toLowerCase()}/${menu.replace(/\s+/g, '').toLowerCase()}`}
+                    to={`browse/${validatedCurrentPath ? `${validatedCurrentPath}/` : ''}${data.name.replace(/\s+/g, '').toLowerCase()}/${menu.replace(/\s+/g, '').toLowerCase()}`}
                     className="link !bg-transparent capitalize"
                   >
                     <FolderIcon />
