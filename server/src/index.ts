@@ -1,13 +1,14 @@
 import express from 'express'
 import { CONFIG } from './config/env.config'
+import { prisma } from './db/prisma.js'
 import { notFoundController } from './middlewares/404.middleware'
 import { errorController } from './middlewares/error.middleware'
 import { loggerMiddleware } from './middlewares/logger.middleware'
+import { initDocs } from './providers/swagger.provider'
 import { initCors } from './startup/cors.startup'
 import { initRoutes } from './startup/routes.startup'
 import { initSession } from './startup/session.startup'
 import { logger } from './util/logger.util'
-import { prisma } from './db/prisma.js'
 
 const app = express()
 
@@ -29,6 +30,9 @@ const startServer = () => {
 
   logger.info('Adding routes')
   initRoutes(app)
+
+  logger.info('Adding swagger docs')
+  initDocs(app)
 
   logger.info('Adding notFoundController')
   app.use(notFoundController)
