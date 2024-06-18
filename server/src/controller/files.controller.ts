@@ -4,6 +4,8 @@ import { createFileSchema } from '../schema/files.schema'
 import { prisma } from '../db/prisma'
 import{ createFolder, decodeBase64ToFile} from '../util/customhelper.js'
 
+import {CONFIG} from '../config/env.config.js'
+
 export const getFile: RequestHandler = async (req, res) => {
   try {
     const files = await prisma.files.findMany({
@@ -46,7 +48,7 @@ export const createFile: RequestHandler = async (req, res) => {
 export const uploadFile: RequestHandler = async (req ,res) =>{
   try {
     const { filename, filecontent } = req.body;
-    const targetFolder = `root/data`;
+    const targetFolder = `${CONFIG.IS_FILE_SERVER == true ? CONFIG.FILE_SERVER: "root"}/data`;
     let folders = filename.split("_");
 
     if (filename.includes("REV")) {
