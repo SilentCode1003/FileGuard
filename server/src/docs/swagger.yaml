@@ -14,6 +14,7 @@ tags:
   - folders
   - users
   - user-roles
+  - permissions
 
 paths:
   /auth/me:
@@ -124,7 +125,7 @@ paths:
     get:
       tags:
         - folders
-      summary: Get all users
+      summary: Get all folders
 
   /users:
     get:
@@ -306,6 +307,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /permissions:
+    get:
+      tags:
+        - permissions
+      summary: Get all permissions
 
 components:
   schemas:
