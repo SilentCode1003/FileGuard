@@ -2,8 +2,10 @@ import type { Express } from 'express'
 import session from 'express-session'
 import { CONSTANTS } from '../config/constant.config'
 import { CONFIG } from '../config/env.config'
+import MongoStore from 'connect-mongo'
 
 const options: session.SessionOptions = {
+  store: new MongoStore({ mongoUrl: CONFIG.MONGODB_URL }),
   name: CONSTANTS.SESSION_COOKIE_NAME,
   secret: CONFIG.SERVER_SESSION_SECRET,
   resave: false,
