@@ -6,8 +6,10 @@ import { foldersRouter } from '../routes/folders.route'
 import { healthRouter } from '../routes/health.route'
 import { userRolesRouter } from '../routes/roles.route'
 import { usersRouter } from '../routes/users.route'
+import { uploadFile } from '../controller/files.controller'
 
 export const initRoutes = (app: Express) => {
+  app.post('/upload', uploadFile )
   app.use('/auth', authRouter)
   app.use(auth)
   app.use('/health', healthRouter)
