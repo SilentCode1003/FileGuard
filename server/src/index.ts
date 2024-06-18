@@ -9,6 +9,7 @@ import { initCors } from './startup/cors.startup'
 import { initRoutes } from './startup/routes.startup'
 import { initSession } from './startup/session.startup'
 import { logger } from './util/logger.util'
+import { existsSync, mkdir } from 'fs'
 
 const app = express()
 
@@ -16,8 +17,17 @@ const startServer = () => {
   logger.info('--------------------Server starting--------------------')
   logger.info(`Running application on ${CONFIG.NODE_ENV} environment`)
 
+  if (!existsSync('root')) {
+    mkdir('root', (err) => {
+      if (err) throw err
+      logger.info('Root folder created')
+    })
+  } else {
+    logger.info('Root folder already exists')
+  }
+
   logger.info('Adding req body json parser')
-  app.use(express.json())
+  app.use(express.json({ limit: '1gb' }))
 
   logger.info('Adding logger middleware')
   app.use(loggerMiddleware)
