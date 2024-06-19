@@ -1,8 +1,7 @@
 import { z } from 'zod'
 
-export const createFileSchema = z.object({
+export const createFolderFileSchema = z.object({
   file: z.string().base64(),
   fileName: z.string(),
   fileMimeType: z.string(),
-  filePath: z.string(),
 })
