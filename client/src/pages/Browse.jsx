@@ -1,5 +1,5 @@
-import { useParams } from 'react-router-dom'
-import { useCallback } from 'react'
+import { NavLink, useParams } from 'react-router-dom'
+import { useCallback, React } from 'react'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
@@ -43,10 +43,22 @@ const fileToBase64 = (file) => {
   })
 }
 
+export const generateBreadcrumbs = (path) => {
+  const segments = path.split('/')
+  return segments.map((segment, index) => {
+    return {
+      name: segment,
+      path: segments.slice(0, index + 1).join('/'),
+    }
+  })
+}
+
 const Browse = () => {
   const queryClient = useQueryClient()
   const params = useParams()
   const { '*': path } = params
+
+  const breadcrumbs = generateBreadcrumbs(path)
 
   const newFilesMutation = useMutation({
     mutationFn: uploadFiles,
@@ -93,9 +105,19 @@ const Browse = () => {
   }
 
   return (
-    <div className="px-2 lg:px-24 pt-8">
-      <div className="py-4 text-2xl">
-        <p>{path}</p>
+    <div className="px-2 lg:px-24">
+      <div className="py-4 text-2xl flex space-x-2">
+        {breadcrumbs.map((crumb, index) => (
+          <div key={crumb.path}>
+            {index > 0 && <span className="mr-2 text-xl">&gt;</span>}
+            <NavLink
+              to={`/browse/${crumb.path}`}
+              className="text-md p-2 rounded-md hover:bg-slate-200 capitalize"
+            >
+              {crumb.name}
+            </NavLink>
+          </div>
+        ))}
       </div>
       <div
         {...getRootProps()}
