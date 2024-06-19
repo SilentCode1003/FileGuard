@@ -57,11 +57,13 @@ const startServer = () => {
   })
 
   process.on('SIGINT', () => {
-    logger.info(
-      '--------------------SIGINT signal recieved, Closing the application--------------------',
-    )
-    prisma.$disconnect().then(() => logger.info('Prisma disconnected'))
-    server.close()
+    logger.info('SIGINT signal received, Closing the application')
+    prisma.$disconnect().then(() => {
+      logger.info('Prisma disconnected')
+      server.close()
+      logger.info('--------------------Application stopped--------------------')
+      process.exit(0)
+    })
   })
 }
 
