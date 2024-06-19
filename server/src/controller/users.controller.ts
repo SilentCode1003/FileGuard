@@ -3,28 +3,29 @@ import { prisma } from '../db/prisma'
 import { createUserSchema, toggleUserSchema, updateUserSchema } from '../schema/users.schema'
 import bcrypt from 'bcrypt'
 import { nanoid } from '../util/nano.util'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 
 export const getUsers: RequestHandler = async (req, res) => {
   try {
     const users = await prisma.users.findMany({
       include: {
-        userRole: true,
+        role: true,
       },
       omit: {
         userPassword: true,
       },
     })
-    return res.status(200).json({ users })
+    return res.status(200).json({ data: users })
   } catch (err) {
-    return res.status(500).json({ error: err })
+    // TODO: handle error
   }
 }
 
 export const createUser: RequestHandler = async (req, res) => {
-  const validatedBody = await createUserSchema.safeParseAsync(req.body)
+  const validatedBody = createUserSchema.safeParse(req.body)
 
   if (!validatedBody.success) {
-    return res.status(400).json({ error: validatedBody.error.errors[0]?.message })
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
   }
 
   try {
@@ -41,20 +42,29 @@ export const createUser: RequestHandler = async (req, res) => {
         userPassword: true,
       },
     })
-    return res.status(200).json({ user })
+    return res.status(200).json({ data: user })
   } catch (err) {
-    return res.status(500).json({ error: err })
+    if (err instanceof PrismaClientKnownRequestError) {
+      switch (err.code) {
+        case 'P2002':
+          return res.status(400).json({ message: 'User already exists' })
+        case 'P2003':
+          return res.status(400).json({ message: 'Role id does not exist' })
+        default:
+          return res.status(400).json({ message: 'Prisma client error' })
+      }
+    }
   }
 }
 
 export const updateUser: RequestHandler = async (req, res) => {
-  const validatedBody = await updateUserSchema.safeParseAsync({
+  const validatedBody = updateUserSchema.safeParse({
     ...req.body,
     userId: req.params.userId,
   })
 
   if (!validatedBody.success) {
-    return res.status(400).json({ error: validatedBody.error.errors[0]?.message })
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
   }
 
   try {
@@ -68,19 +78,30 @@ export const updateUser: RequestHandler = async (req, res) => {
         userPassword: true,
       },
     })
-    return res.status(200).json({ user })
+    return res.status(200).json({ data: user })
   } catch (err) {
-    return res.status(500).json({ error: err })
+    if (err instanceof PrismaClientKnownRequestError) {
+      switch (err.code) {
+        case 'P2002':
+          return res.status(400).json({ message: 'User already exists' })
+        case 'P2003':
+          return res.status(400).json({ message: 'Foreign key does not exist' })
+        case 'P2025':
+          return res.status(400).json({ message: 'User to update not found' })
+        default:
+          return res.status(400).json({ message: 'Prisma client error' })
+      }
+    }
   }
 }
 
 export const toggleUser: RequestHandler = async (req, res) => {
-  const validatedBody = await toggleUserSchema.safeParseAsync({
+  const validatedBody = toggleUserSchema.safeParse({
     userId: req.params.userId,
   })
 
   if (!validatedBody.success) {
-    return res.status(400).json({ error: validatedBody.error.errors[0]?.message })
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
   }
 
   try {
@@ -96,8 +117,8 @@ export const toggleUser: RequestHandler = async (req, res) => {
         userPassword: true,
       },
     })
-    return res.status(200).json({ user: toggledUser })
+    return res.status(200).json({ data: toggledUser })
   } catch (err) {
-    return res.status(500).json({ error: err })
+    return res.status(500).json({ message: err })
   }
 }
