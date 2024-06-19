@@ -291,6 +291,154 @@ paths:
       tags:
         - users
       summary: Get all users
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Users'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - users
+      summary: Create a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userFullname:
+                  type: string
+                userUsername:
+                  type: string
+                userPassword:
+                  type: string
+                userRoleId:
+                  type: string
+                  format: nanoid
+                  example: aofJcp3aUpuQ1m4QXbZHN
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Users'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - users
+      summary: Update a user
+      parameters:
+        - name: userId
+          in: path
+          description: The id of the user to update
+          required: true
+          schema:
+            type: string
+            format: nanoid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userFullname:
+                  type: string
+                userUsername:
+                  type: string
+                userPassword:
+                  type: string
+                userRoleId:
+                  type: string
+                  format: nanoid
+                  example: aofJcp3aUpuQ1m4QXbZHN
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Users'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/{userId}/toggle:
+    put:
+      tags:
+        - users
+      summary: Toggle user isActive state
+      parameters:
+        - name: userId
+          in: path
+          description: The id of the user to toggle
+          required: true
+          schema:
+            type: string
+            format: nanoid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Users'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /user-roles:
     get:
@@ -569,6 +717,27 @@ components:
         date:
           type: string
           format: date-time
+    Users:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        userFullname:
+          type: string
+          example: John Doe
+        userUsername:
+          type: string
+          example: John Doe
+        userRoleId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        role:
+          $ref: '#/components/schemas/UserRole'
+        userIsActive:
+          type: boolean
     UserRole:
       type: object
       properties:
