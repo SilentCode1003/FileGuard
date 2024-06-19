@@ -6,3 +6,7 @@ export const createFileSchema = z.object({
   fileMimeType: z.string(),
   filePath: z.string(),
 })
+
+export const searchFilesSchema = z.object({
+  searchText: z.string().optional(),
+})
