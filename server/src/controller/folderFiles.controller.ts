@@ -10,7 +10,7 @@ export const getFolderFiles: RequestHandler = async (req, res) => {
     })
     return res.status(200).json({ data: folderFiles })
   } catch (error) {
-    return res.status(500).json({ error })
+    return res.status(500).json({ message: error })
   }
 }
 
@@ -25,6 +25,6 @@ export const createFolderFile: RequestHandler = async (req, res) => {
     })
     return res.status(200).json({ data: folderFile })
   } catch (error) {
-    return res.status(500).json({ error })
+    return res.status(500).json({ message: error })
   }
 }
