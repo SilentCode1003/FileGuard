@@ -1,4 +1,3 @@
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import type { RequestHandler } from 'express'
 import { prisma } from '../db/prisma'
 import { createUserLogSchema } from '../schema/logs.schema'
