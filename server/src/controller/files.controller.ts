@@ -1,9 +1,9 @@
 import type { RequestHandler } from 'express'
 import { writeFile } from 'fs'
 import { prisma } from '../db/prisma'
-import { createFileSchema, searchFilesSchema } from '../schema/files.schema'
+import { createFileSchema, createRevisionsSchema, searchFilesSchema } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
-import type { Files } from '@prisma/client'
+import type { Files, Revisions } from '@prisma/client'
 import { CONFIG } from '../config/env.config.js'
 import { nanoid } from '../util/nano.util'
 
@@ -72,10 +72,8 @@ export const createFile: RequestHandler = async (req, res) => {
             ],
           },
         })
-
         if (checkFile) {
-          // make revision entry of file
-          return res.status(400).json({ message: 'File already exists!' })
+          throw new Error('File already exists!')
         } else {
           writeFile(filePath, file, (err) => {
             if (err) throw err
@@ -106,12 +104,14 @@ export const createFile: RequestHandler = async (req, res) => {
           })
 
           if (!folder) {
-            return res.status(400).json({ message: 'Folder not found!' })
+            throw new Error('Folder not found!')
           }
+
+          const newFolderFileId = nanoid()
 
           await prisma.folderFiles.create({
             data: {
-              ffId: newFileId,
+              ffId: newFolderFileId,
               ffFolderId: folder.folderId,
               ffFileId: newFileId,
             },
@@ -122,8 +122,104 @@ export const createFile: RequestHandler = async (req, res) => {
       })
     }
     return res.status(200).json({ data: newFiles })
-  } catch (err) {
-    return res.status(500).json({ message: err })
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message)
+      res.statusMessage = error.message
+      return res.status(500).send({ message: error.message })
+    }
+  }
+}
+
+export const createRevisions: RequestHandler = async (req, res) => {
+  const validatedBody = await createRevisionsSchema.safeParseAsync({
+    files: req.body.files.map((file: any) => ({
+      ...file,
+      revFileUserId: req.context.user!.userId,
+    })),
+  })
+
+  if (!validatedBody.success) {
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
+  }
+
+  try {
+    let newRevisions: Array<Omit<Revisions, 'revFileBase'>> = []
+    for (const fileData of validatedBody.data.files) {
+      const file = Buffer.from(fileData.revFile, 'base64')
+
+      await prisma.$transaction(async (prisma) => {
+        const filePath = `./root${fileData.revFilePath}/${fileData.revFileName}`
+
+        const checkRevision = await prisma.revisions.findFirst({
+          where: {
+            AND: [
+              {
+                revFilePath: `root${fileData.revFilePath}`,
+              },
+              {
+                revFileName: fileData.revFileName,
+              },
+            ],
+          },
+        })
+        if (checkRevision) {
+          throw new Error('Revision already exists!')
+        } else {
+          writeFile(filePath, file, (err) => {
+            if (err) throw err
+            console.log('The Revision file has been saved!')
+          })
+
+          const newRevId = nanoid()
+          const newRevision = await prisma.revisions.create({
+            data: {
+              revFileBase: fileData.revFile,
+              revFileId: fileData.revFileId,
+              revFileName: fileData.revFileName,
+              revFilePath: `root${fileData.revFilePath}`,
+              revUserId: req.context.user.userId,
+              revId: newRevId,
+            },
+            omit: {
+              revFileBase: true,
+            },
+          })
+
+          const folderName = /\w+/gi.exec(fileData.revFilePath)!
+          const folderPath = `root${getFolderPath(fileData.revFilePath)}`
+
+          const folder = await prisma.folders.findFirst({
+            where: {
+              AND: [{ folderName: folderName[0]! }, { folderPath }],
+            },
+          })
+
+          if (!folder) {
+            throw new Error('Folder not found!')
+          }
+
+          const newFolderFileId = nanoid()
+
+          await prisma.folderFiles.create({
+            data: {
+              ffId: newFolderFileId,
+              ffFolderId: folder.folderId,
+              ffRevId: newRevId,
+            },
+          })
+
+          newRevisions.push(newRevision)
+        }
+      })
+    }
+    return res.status(200).json({ data: newRevisions })
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message)
+      res.statusMessage = error.message
+      return res.status(500).send({ message: error.message })
+    }
   }
 }
 
