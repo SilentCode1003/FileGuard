@@ -7,6 +7,7 @@ import { filesRouter } from '../routes/files.route'
 import { folderFilesRouter } from '../routes/folderFiles.route'
 import { foldersRouter } from '../routes/folders.route'
 import { healthRouter } from '../routes/health.route'
+import { userLogsRouter } from '../routes/logs.route'
 import { permissionsRouter } from '../routes/permissions.route'
 import { userRolesRouter } from '../routes/roles.route'
 import { usersRouter } from '../routes/users.route'
@@ -23,4 +24,5 @@ export const initRoutes = (app: Express) => {
   app.use('/user-roles', userRolesRouter)
   app.use('/permissions', permissionsRouter)
   app.use('/departments', departmentsRouter)
+  app.use('/user-logs', userLogsRouter)
 }
