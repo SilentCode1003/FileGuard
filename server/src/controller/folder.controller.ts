@@ -15,7 +15,7 @@ export const getFolders: RequestHandler = async (req, res) => {
   try {
     const folders = await prisma.folders.findMany({
       where: {
-        folderPath: validatedBody.data.folderPath,
+        folderPath: `root${validatedBody.data.folderPath}`,
       },
     })
     return res.status(200).json({ data: folders })
