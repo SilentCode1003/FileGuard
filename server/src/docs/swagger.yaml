@@ -246,14 +246,6 @@ paths:
                   type: string
                 folderPath:
                   type: string
-                folderParentId:
-                  type: string
-                  format: nanoid
-                  example: aofJcp3aUpuQ1m4QXbZHN
-                folderUserId:
-                  type: string
-                  format: nanoid
-                  example: aofJcp3aUpuQ1m4QXbZHN
                 folderDepth:
                   type: number
                   format: integer
@@ -632,6 +624,62 @@ paths:
       tags:
         - user-logs
       summary: Get all logs
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserLogs'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - user-logs
+      summary: Create a user log
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ulDescription:
+                  type: string
+              required:
+                - ulDescription
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserLogs'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   schemas:
@@ -750,6 +798,26 @@ components:
           example: admin
         urIsActive:
           type: boolean
+    UserLogs:
+      type: object
+      properties:
+        ulId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        ulUserId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        user:
+          $ref: '#/components/schemas/User'
+        ulDescription:
+          type: string
+          example: test
+        createdAt:
+          type: string
+          format: date-time
+          example: '2022-01-01T00:00:00.000Z'
     ErrorResponse:
       type: object
       properties:
