@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       backgroundImage: {
-        'polygon-image': "url('./src/assets/img/login-background.jpg')",
+        'polygon-image': "url('/img/login-background.jpg')",
       },
     },
   },
