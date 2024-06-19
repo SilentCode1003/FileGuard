@@ -3,12 +3,6 @@ import type { RequestHandler } from 'express'
 import { CONSTANTS } from '../config/constant.config'
 import { prisma } from '../db/prisma'
 import { loginSchema } from '../schema/auth.schema'
-import { logger } from '../util/logger.util'
-
-export const getMe: RequestHandler = async (req, res, next) => {
-  // req.session.user should because this controller should be called after isLoggedIn(or whatever login checker) middleware
-  res.status(200).json({ data: req.session!.user })
-}
 
 export const login: RequestHandler = async (req, res, next) => {
   const validatedBody = loginSchema.safeParse(req.body)
@@ -54,4 +48,35 @@ export const logout: RequestHandler = async (req, res, next) => {
 
     res.sendStatus(204)
   })
+}
+
+export const getCurrentUser: RequestHandler = async (req, res) => {
+  try {
+    const user = await prisma.users.findUnique({
+      where: { userId: req.context.user.userId },
+    })
+
+    if (!user) {
+      return res.status(401).json({
+        data: {
+          isLogged: false,
+        },
+      })
+    } else {
+      return res.status(401).json({
+        data: {
+          isLogged: true,
+          user: {
+            userId: user.userId,
+            userFullname: user.userFullname,
+            userUsername: user.userUsername,
+            userRoleId: user.userRoleId,
+            userIsActive: user.userIsActive,
+          },
+        },
+      })
+    }
+  } catch (err) {
+    return res.status(500).json({ error: err })
+  }
 }

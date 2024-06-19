@@ -1,10 +1,11 @@
 import express from 'express'
-import { getMe, login, logout } from '../controller/auth.controller'
+import { getCurrentUser, login, logout } from '../controller/auth.controller'
+import { auth } from '../middlewares/auth.middleware'
 
 export const authRouter = express.Router()
-
-authRouter.get('/me', getMe)
 
 authRouter.post('/login', login)
 
 authRouter.delete('/logout', logout)
+
+authRouter.get('/me', auth, getCurrentUser)
