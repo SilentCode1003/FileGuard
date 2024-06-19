@@ -1,9 +1,9 @@
-import { FaSearch, FaUserCircle } from 'react-icons/fa'
-import { IoIosNotificationsOutline } from 'react-icons/io'
-import { SlLogout } from 'react-icons/sl'
+import { FaSearch } from 'react-icons/fa'
+import { Menu, MenuButton, MenuItems, Transition } from '@headlessui/react'
+import { NavLink } from 'react-router-dom'
+import { FaRegUser } from 'react-icons/fa'
 
-import Dropdown from '../utility/dropdown/Dropdown'
-import DropdownItem from '../utility/dropdown/DropdownItem'
+import { SlLogout, SlSettings } from 'react-icons/sl'
 
 const TopBar = () => {
   return (
@@ -17,7 +17,7 @@ const TopBar = () => {
                 id="top-bar-search"
                 placeholder="Search"
                 className="border border-gray-300 rounded-lg py-2 px-4 
-                  w-[17rem] h-[2.5rem] focus:outline-none
+                  w-[30rem] h-[2.5rem] focus:outline-none
                   focus:border-sky-300"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -27,10 +27,46 @@ const TopBar = () => {
 
             <div className="md:ml-auto">
               <div className="flex space-x-2">
-                <IoIosNotificationsOutline size={26} className="my-auto mr-5 cursor-pointer" />
-                {/* <Dropdown Icon={FaUserCircle} size={26}>
-                  <DropdownItem Icon={SlLogout}>Logout</DropdownItem>
-                </Dropdown> */}
+                <Menu>
+                  <div className="my-auto text-lg">
+                    <p>No Username Found</p>
+                  </div>
+                  <MenuButton className="inline-flex whitespace-nowrap items-center rounded-full p-2 text-lg hover:bg-gray-300">
+                    <FaRegUser size={25} />
+                  </MenuButton>
+                  <Transition
+                    enter="transition ease-out duration-75"
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="transition ease-in duration-100"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
+                  >
+                    <MenuItems
+                      anchor="bottom start"
+                      className="w-[12rem] origin-top-right rounded border border-gray-300 bg-white p-1 mt-1 text-sm/6 text-gray-600 [--anchor-gap:var(--spacing-1)] focus:outline-none"
+                    >
+                      <NavLink
+                        to="#"
+                        className="group flex w-full items-center gap-2 rounded py-1.5 px-3 hover:bg-slate-200/85"
+                      >
+                        <div className="basis-2/12">
+                          <SlSettings className="size-4 text-black" />
+                        </div>
+                        <div className="basis-10/12">Settings</div>
+                      </NavLink>
+                      <NavLink
+                        to="#"
+                        className="group flex w-full items-center gap-2 rounded py-1.5 px-3 hover:bg-slate-200/85"
+                      >
+                        <div className="basis-2/12">
+                          <SlLogout className="size-4 text-black" />
+                        </div>
+                        <div className="basis-10/12">Logout</div>
+                      </NavLink>
+                    </MenuItems>
+                  </Transition>
+                </Menu>
               </div>
             </div>
           </div>

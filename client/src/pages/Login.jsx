@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 
 import { ToastContainer, toast, Slide } from 'react-toastify'
 
-import Logo from '../assets/img/file-guard-logo.png'
+import Logo from '/img/file-guard-logo.png'
 import { useState } from 'react'
 import { apiClient } from '../lib/api-client'
 
