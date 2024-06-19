@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express'
 import { existsSync, writeFile } from 'fs'
-import { createFileSchema } from '../schema/files.schema'
 import { prisma } from '../db/prisma'
+import { createFileSchema } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
 
 import { CONFIG } from '../config/env.config.js'
@@ -30,7 +30,7 @@ export const createFile: RequestHandler = async (req, res) => {
   })
 
   if (!validatedBody.success) {
-    return res.status(400).json({ error: validatedBody.error.errors })
+    return res.status(400).json({ message: validatedBody.error.errors })
   }
 
   try {
@@ -41,7 +41,7 @@ export const createFile: RequestHandler = async (req, res) => {
 
       if (existsSync(filePath)) {
         // make revision entry of file
-        return res.status(400).json({ error: 'File already exists!' })
+        return res.status(400).json({ message: 'File already exists!' })
       } else {
         writeFile(filePath, file, (err) => {
           if (err) throw err
@@ -63,16 +63,16 @@ export const createFile: RequestHandler = async (req, res) => {
         })
 
         const folderName = /\w+/gi.exec(validatedBody.data.filePath)!
-        const folderPath = validatedBody.data.fileName.split('_')[0]
+        const folderPath = `root${getFolderPath(validatedBody.data.filePath)}`
 
         const folder = await prisma.folders.findFirst({
           where: {
-            AND: [{ folderName: folderName[folderName.length - 1]! }, { folderPath: folderPath }],
+            AND: [{ folderName: folderName[0]! }, { folderPath }],
           },
         })
 
         if (!folder) {
-          return res.status(400).json({ error: 'Folder not found!' })
+          return res.status(400).json({ message: 'Folder not found!' })
         }
 
         await prisma.folderFiles.create({
@@ -87,7 +87,7 @@ export const createFile: RequestHandler = async (req, res) => {
       }
     })
   } catch (err) {
-    return res.status(500).json({ error: err })
+    return res.status(500).json({ message: err })
   }
 }
 
@@ -103,7 +103,7 @@ export const uploadFile: RequestHandler = async (req, res) => {
     }
 
     if (folders.length > 4) {
-      console.log(folders[0], folders[1], folders[2], folders[3])
+      // console.log(folders[0], folders[1], folders[2], folders[3])
       let companyFolder = `${targetFolder}/${folders[0]}`
       let yearOrArchive = `${companyFolder}/${folders[1]}`
       let departmentFolder = `${yearOrArchive}/${folders[2]}`
@@ -118,6 +118,37 @@ export const uploadFile: RequestHandler = async (req, res) => {
 
       await prisma.$transaction(async (prisma) => {
         const newFileId = nanoid()
+
+        const checkFile = await prisma.files.findFirst({
+          where: {
+            AND: [
+              {
+                filePath: documentTypeFolder,
+              },
+              {
+                fileName: filename,
+              },
+            ],
+          },
+        })
+
+        if (checkFile) {
+          throw new Error('File already exists!')
+        }
+
+        const folderName = /\w+$/i.exec(documentTypeFolder)!
+        const folderPath = getFolderPath(documentTypeFolder)
+
+        const folder = await prisma.folders.findFirst({
+          where: {
+            AND: [{ folderName: folderName[folderName.length - 1]! }, { folderPath: folderPath }],
+          },
+        })
+
+        if (!folder) {
+          throw new Error('Folder not found!')
+        }
+
         await prisma.files.create({
           data: {
             fileBase: filecontent,
@@ -131,34 +162,24 @@ export const uploadFile: RequestHandler = async (req, res) => {
           },
         })
 
-        const folderName = /\w+$/i.exec(documentTypeFolder)!
-        const folderPath = getFolderPath(documentTypeFolder)
-
-        const folder = await prisma.folders.findFirst({
-          where: {
-            AND: [{ folderName: folderName[folderName.length - 1]! }, { folderPath: folderPath }],
-          },
-        })
-
-        if (!folder) {
-          return res.status(400).json({ error: 'Folder not found!' })
-        }
-
+        const newFolderFileId = nanoid()
         await prisma.folderFiles.create({
           data: {
-            ffId: newFileId,
+            ffId: newFolderFileId,
             ffFolderId: folder.folderId,
             ffFileId: newFileId,
           },
         })
       })
+      return res.status(200).send({ message: 'Upload Success' })
     } else {
       console.log('Incorrect Filename!', filename)
     }
-
-    res.status(200).send({ msg: 'Upload Success' })
   } catch (error) {
-    console.log(error)
-    res.status(500).send({ msg: error })
+    if (error instanceof Error) {
+      console.log(error.message)
+      res.statusMessage = error.message
+      return res.status(500).send({ message: error.message })
+    }
   }
 }
