@@ -10,7 +10,7 @@ declare global {
   namespace Express {
     interface Request {
       context: {
-        user?: Omit<Users, 'userPassword'>
+        user: Omit<Users, 'userPassword'>
       }
     }
   }
