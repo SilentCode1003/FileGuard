@@ -72,11 +72,13 @@ model Folders {
 }
 
 model FolderFiles {
-  ffId       String  @id @map("ff_id") @db.VarChar(100)
-  ffFolderId String  @map("ff_folder_id") @db.VarChar(100)
-  folders    Folders @relation(fields: [ffFolderId], references: [folderId], onDelete: Cascade)
-  ffFileId   String  @map("ff_file_id") @db.VarChar(100)
-  files      Files   @relation(fields: [ffFileId], references: [fileId], onDelete: Cascade)
+  ffId       String    @id @map("ff_id") @db.VarChar(100)
+  ffFolderId String    @map("ff_folder_id") @db.VarChar(100)
+  folders    Folders   @relation(fields: [ffFolderId], references: [folderId], onDelete: Cascade)
+  ffFileId   String?    @map("ff_file_id") @db.VarChar(100)
+  files      Files?     @relation(fields: [ffFileId], references: [fileId], onDelete: Cascade)
+  ffRevId    String?    @map("ff_rev_id") @db.VarChar(100)
+  revisions  Revisions? @relation(fields: [ffRevId], references: [revId], onDelete: Cascade)
 }
 
 model Companies {
@@ -118,13 +120,14 @@ model FileContents {
 }
 
 model Revisions {
-  revId        String   @id @map("rev_id") @db.VarChar(100)
-  revFileId    String   @map("rev_file_id") @db.VarChar(100)
-  file         Files    @relation(fields: [revFileId], references: [fileId])
-  revFileName  String   @map("rev_file_name") @db.Text
-  revFilePath  String   @map("rev_file_path") @db.Text
-  revFileBase  String   @map("rev_file_base") @db.LongText
-  revCreatedAt DateTime @default(now())
-  revUserId    String   @map("rev_user_id") @db.VarChar(100)
-  user         Users    @relation(fields: [revUserId], references: [userId])
+  revId        String        @id @map("rev_id") @db.VarChar(100)
+  revFileId    String        @map("rev_file_id") @db.VarChar(100)
+  file         Files         @relation(fields: [revFileId], references: [fileId])
+  revFileName  String        @map("rev_file_name") @db.Text
+  revFilePath  String        @map("rev_file_path") @db.Text
+  revFileBase  String        @map("rev_file_base") @db.LongText
+  revCreatedAt DateTime      @default(now())
+  revUserId    String        @map("rev_user_id") @db.VarChar(100)
+  user         Users         @relation(fields: [revUserId], references: [userId])
+  FolderFiles  FolderFiles[]
 }

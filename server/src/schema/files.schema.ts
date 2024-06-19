@@ -14,3 +14,15 @@ export const createFileSchema = z.object({
 export const searchFilesSchema = z.object({
   searchText: z.string().optional(),
 })
+
+export const createRevisionsSchema = z.object({
+  files: z.array(
+    z.object({
+      revFile: z.string().base64(),
+      revFileName: z.string(),
+      revFileMimeType: z.string(),
+      revFilePath: z.string(),
+      revFileId: z.string().nanoid(),
+    }),
+  ),
+})
