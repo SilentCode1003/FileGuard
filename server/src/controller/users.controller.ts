@@ -10,6 +10,9 @@ export const getUsers: RequestHandler = async (req, res) => {
       include: {
         userRole: true,
       },
+      omit: {
+        userPassword: true,
+      },
     })
     return res.status(200).json({ users })
   } catch (err) {
@@ -88,6 +91,9 @@ export const toggleUser: RequestHandler = async (req, res) => {
       where: { userId: validatedBody.data.userId },
       data: {
         userIsActive: !user?.userIsActive,
+      },
+      omit: {
+        userPassword: true,
       },
     })
     return res.status(200).json({ user: toggledUser })
