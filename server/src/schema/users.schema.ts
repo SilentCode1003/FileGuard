@@ -2,17 +2,17 @@ import { z } from 'zod'
 
 export const createUserSchema = z.object({
   userFullname: z.string({
-    required_error: 'Fullname is required',
+    required_error: 'userFullname is required',
   }),
   userUsername: z.string({
-    required_error: 'Username is required',
+    required_error: 'userUsername is required',
   }),
   userPassword: z.string({
-    required_error: 'Password is required',
+    required_error: 'userPassword is required',
   }),
   userRoleId: z
     .string({
-      required_error: 'Role is required',
+      required_error: 'userRoleId is required',
     })
     .nanoid(),
 })
@@ -20,7 +20,7 @@ export const createUserSchema = z.object({
 export const updateUserSchema = z.object({
   userId: z
     .string({
-      required_error: 'User ID is required',
+      required_error: 'userId is required',
     })
     .nanoid(),
   userFullname: z.string().optional(),
@@ -32,7 +32,7 @@ export const updateUserSchema = z.object({
 export const toggleUserSchema = z.object({
   userId: z
     .string({
-      required_error: 'User ID is required',
+      required_error: 'userId is required',
     })
     .nanoid(),
 })
