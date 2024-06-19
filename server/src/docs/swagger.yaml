@@ -16,6 +16,7 @@ tags:
   - user-roles
   - permissions
   - departments
+  - user-logs
 
 paths:
   /auth/me:
@@ -320,6 +321,12 @@ paths:
       tags:
         - departments
       summary: Get all departments
+
+  /user-logs:
+    get:
+      tags:
+        - user-logs
+      summary: Get all logs
 
 components:
   schemas:
