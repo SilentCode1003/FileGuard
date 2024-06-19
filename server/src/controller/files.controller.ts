@@ -1,9 +1,9 @@
 import type { RequestHandler } from 'express'
-import { existsSync, writeFile } from 'fs'
+import { writeFile } from 'fs'
 import { prisma } from '../db/prisma'
 import { createFileSchema, searchFilesSchema } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
-
+import type { Files } from '@prisma/client'
 import { CONFIG } from '../config/env.config.js'
 import { nanoid } from '../util/nano.util'
 
@@ -45,11 +45,7 @@ export const getFiles: RequestHandler = async (req, res) => {
 
 export const createFile: RequestHandler = async (req, res) => {
   const validatedBody = await createFileSchema.safeParseAsync({
-    file: req.body.file,
-    fileUserId: req.context.user!.userId,
-    fileMimeType: req.body.fileMimeType,
-    fileName: req.body.fileName,
-    filePath: req.body.filePath,
+    files: req.body.files.map((file: any) => ({ ...file, fileUserId: req.context.user!.userId })),
   })
 
   if (!validatedBody.success) {
@@ -57,71 +53,75 @@ export const createFile: RequestHandler = async (req, res) => {
   }
 
   try {
-    const file = Buffer.from(validatedBody.data.file, 'base64')
+    let newFiles: Array<Omit<Files, 'fileBase'>> = []
+    for (const fileData of validatedBody.data.files) {
+      const file = Buffer.from(fileData.file, 'base64')
 
-    await prisma.$transaction(async (prisma) => {
-      const filePath = `./root${validatedBody.data.filePath}/${validatedBody.data.fileName}`
+      await prisma.$transaction(async (prisma) => {
+        const filePath = `./root${fileData.filePath}/${fileData.fileName}`
 
-      const checkFile = await prisma.files.findFirst({
-        where: {
-          AND: [
-            {
-              filePath: `root${validatedBody.data.filePath}`,
-            },
-            {
-              fileName: validatedBody.data.fileName,
-            },
-          ],
-        },
-      })
-
-      if (checkFile) {
-        // make revision entry of file
-        return res.status(400).json({ message: 'File already exists!' })
-      } else {
-        writeFile(filePath, file, (err) => {
-          if (err) throw err
-          console.log('The file has been saved!')
-        })
-
-        const newFileId = nanoid()
-        const newFile = await prisma.files.create({
-          data: {
-            fileBase: validatedBody.data.file,
-            fileId: newFileId,
-            fileName: validatedBody.data.fileName,
-            filePath: `root${validatedBody.data.filePath}`,
-            fileUserId: req.context.user.userId,
-          },
-          omit: {
-            fileBase: true,
-          },
-        })
-
-        const folderName = /\w+/gi.exec(validatedBody.data.filePath)!
-        const folderPath = `root${getFolderPath(validatedBody.data.filePath)}`
-
-        const folder = await prisma.folders.findFirst({
+        const checkFile = await prisma.files.findFirst({
           where: {
-            AND: [{ folderName: folderName[0]! }, { folderPath }],
+            AND: [
+              {
+                filePath: `root${fileData.filePath}`,
+              },
+              {
+                fileName: fileData.fileName,
+              },
+            ],
           },
         })
 
-        if (!folder) {
-          return res.status(400).json({ message: 'Folder not found!' })
+        if (checkFile) {
+          // make revision entry of file
+          return res.status(400).json({ message: 'File already exists!' })
+        } else {
+          writeFile(filePath, file, (err) => {
+            if (err) throw err
+            console.log('The file has been saved!')
+          })
+
+          const newFileId = nanoid()
+          const newFile = await prisma.files.create({
+            data: {
+              fileBase: fileData.file,
+              fileId: newFileId,
+              fileName: fileData.fileName,
+              filePath: `root${fileData.filePath}`,
+              fileUserId: req.context.user.userId,
+            },
+            omit: {
+              fileBase: true,
+            },
+          })
+
+          const folderName = /\w+/gi.exec(fileData.filePath)!
+          const folderPath = `root${getFolderPath(fileData.filePath)}`
+
+          const folder = await prisma.folders.findFirst({
+            where: {
+              AND: [{ folderName: folderName[0]! }, { folderPath }],
+            },
+          })
+
+          if (!folder) {
+            return res.status(400).json({ message: 'Folder not found!' })
+          }
+
+          await prisma.folderFiles.create({
+            data: {
+              ffId: newFileId,
+              ffFolderId: folder.folderId,
+              ffFileId: newFileId,
+            },
+          })
+
+          newFiles.push(newFile)
         }
-
-        await prisma.folderFiles.create({
-          data: {
-            ffId: newFileId,
-            ffFolderId: folder.folderId,
-            ffFileId: newFileId,
-          },
-        })
-
-        return res.status(200).json({ data: newFile })
-      }
-    })
+      })
+    }
+    return res.status(200).json({ data: newFiles })
   } catch (err) {
     return res.status(500).json({ message: err })
   }
