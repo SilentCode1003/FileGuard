@@ -199,7 +199,92 @@ paths:
     get:
       tags:
         - folders
-      summary: Get all folders
+      summary: Get all folders based on query params
+      parameters:
+        - in: query
+          name: folderPath
+          schema:
+            type: string
+          required: true
+          description: The path of the folder to get
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Folders'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - folders
+      summary: Create a new folder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                folderName:
+                  type: string
+                folderPath:
+                  type: string
+                folderParentId:
+                  type: string
+                  format: nanoid
+                  example: aofJcp3aUpuQ1m4QXbZHN
+                folderUserId:
+                  type: string
+                  format: nanoid
+                  example: aofJcp3aUpuQ1m4QXbZHN
+                folderDepth:
+                  type: number
+                  format: integer
+                  example: 1
+              required:
+                - folderName
+                - folderPath
+                - folderUserId
+                - folderDepth
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Folders'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /users:
     get:
@@ -443,7 +528,36 @@ components:
         createdAt:
           type: string
           format: date-time
-          example: 2022-01-01T00:00:00.000Z
+          example: '2022-01-01T00:00:00.000Z'
+    Folders:
+      type: object
+      properties:
+        folderId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        folderName:
+          type: string
+          example: test
+        folderPath:
+          type: string
+          example: test
+        folderParentId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        folderUserId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        folderDepth:
+          type: number
+          format: integer
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: '2022-01-01T00:00:00.000Z'
     Health:
       type: object
       properties:
