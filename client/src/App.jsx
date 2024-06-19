@@ -4,6 +4,7 @@ import {
   createRoutesFromElements,
   RouterProvider,
 } from 'react-router-dom'
+import 'react-toastify/dist/ReactToastify.css'
 
 //Layouts
 import MainLayout from './layouts/MainLayout'
