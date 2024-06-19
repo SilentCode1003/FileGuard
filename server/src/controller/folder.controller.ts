@@ -64,6 +64,10 @@ export const createFolder: RequestHandler = async (req, res) => {
         const folder = await prisma.folders.create({
           data: {
             ...validatedBody.data,
+            folderPath:
+              validatedBody.data.folderPath === '/'
+                ? 'root'
+                : `root${validatedBody.data.folderPath}`,
             folderId: newFolderId,
             folderUserId: req.context.user!.userId,
             folderParentId: validatedBody.data.folderParentId ?? null,
