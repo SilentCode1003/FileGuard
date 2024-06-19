@@ -15,6 +15,7 @@ tags:
   - users
   - user-roles
   - permissions
+  - departments
 
 paths:
   /auth/me:
@@ -313,6 +314,12 @@ paths:
       tags:
         - permissions
       summary: Get all permissions
+
+  /departments:
+    get:
+      tags:
+        - departments
+      summary: Get all departments
 
 components:
   schemas:
