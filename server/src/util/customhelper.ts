@@ -2,19 +2,74 @@ import fs from 'fs'
 import { prisma } from '../db/prisma'
 import { nanoid } from './nano.util'
 
+export const getFolderPath = (folderPath: string) => {
+  const initPath = folderPath.split('/')
+
+  initPath.pop()
+
+  const finalPath = `${initPath.join('/')}`
+
+  return finalPath
+}
 export const createFolder = async (dir: any, folderDepth: number, folderUserId: string) => {
+  const folderName = /\w+$/gi.exec(dir)!
+  const newFolderId = nanoid()
   await prisma.$transaction(async (prisma) => {
-    const folderName = /\w+/gi.exec(dir)!
-    const newFolderId = nanoid()
-    await prisma.folders.create({
-      data: {
-        folderName: folderName[folderName.length - 1]!,
-        folderDepth: folderDepth,
-        folderId: newFolderId,
-        folderPath: dir.split('/').pop() as string,
-        folderUserId,
+    const folderPath = getFolderPath(dir)
+
+    const dirExists = await prisma.folders.findFirst({
+      where: {
+        AND: [
+          {
+            folderPath,
+          },
+          {
+            folderName: folderName[0]!,
+          },
+        ],
       },
     })
+
+    if (dirExists) {
+      return
+    }
+
+    if (folderDepth > 0) {
+      const parentfolderName = /\w+$/gi.exec(folderPath)!
+      const parentFolder = await prisma.folders.findFirst({
+        where: {
+          AND: [
+            {
+              folderPath: getFolderPath(folderPath),
+            },
+            {
+              folderName: parentfolderName[0],
+            },
+          ],
+        },
+      })
+
+      await prisma.folders.create({
+        data: {
+          folderName: folderName[0]!,
+          folderDepth: folderDepth,
+          folderId: newFolderId,
+          folderPath,
+          folderUserId,
+          folderParentId: parentFolder?.folderId,
+        },
+      })
+    } else {
+      await prisma.folders.create({
+        data: {
+          folderName: folderName[folderName.length - 1]!,
+          folderDepth: folderDepth,
+          folderId: newFolderId,
+          folderPath,
+          folderUserId,
+        },
+      })
+    }
 
     //console.log(`Create folder: ${dir}`);
     fs.mkdirSync(dir, { recursive: true })

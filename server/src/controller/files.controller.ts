@@ -2,7 +2,7 @@ import type { RequestHandler } from 'express'
 import { existsSync, writeFile } from 'fs'
 import { createFileSchema } from '../schema/files.schema'
 import { prisma } from '../db/prisma'
-import { createFolder, decodeBase64ToFile } from '../util/customhelper.js'
+import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
 
 import { CONFIG } from '../config/env.config.js'
 import { nanoid } from '../util/nano.util'
@@ -55,28 +55,36 @@ export const createFile: RequestHandler = async (req, res) => {
             fileId: newFileId,
             fileName: validatedBody.data.fileName,
             filePath: validatedBody.data.filePath,
-            fileUserId: req.context.user!.userId,
+            fileUserId: req.context.user.userId,
           },
           omit: {
             fileBase: true,
           },
         })
+
+        const folderName = /\w+/gi.exec(validatedBody.data.filePath)!
+        const folderPath = validatedBody.data.fileName.split('_')[0]
+
+        const folder = await prisma.folders.findFirst({
+          where: {
+            AND: [{ folderName: folderName[folderName.length - 1]! }, { folderPath: folderPath }],
+          },
+        })
+
+        if (!folder) {
+          return res.status(400).json({ error: 'Folder not found!' })
+        }
+
+        await prisma.folderFiles.create({
+          data: {
+            ffId: newFileId,
+            ffFolderId: folder.folderId,
+            ffFileId: newFileId,
+          },
+        })
+
         return res.status(200).json({ data: newFile })
       }
-
-      // const folder = await prisma.folders.findMany({
-      //   where: {
-      //     folderName: validatedBody.data.fileName.split('_')[0],
-      //   },
-      // })
-
-      // await prisma.folderFiles.create({
-      //   data: {
-      //     ffId: newFileId,
-      //     ffFolderId: folderId,
-      //     ffFileId: newFileId,
-      //   },
-      // })
     })
   } catch (err) {
     return res.status(500).json({ error: err })
@@ -86,8 +94,8 @@ export const createFile: RequestHandler = async (req, res) => {
 export const uploadFile: RequestHandler = async (req, res) => {
   try {
     const { filename, filecontent } = req.body
-    const targetFolder = `${CONFIG.IS_FILE_SERVER == true ? CONFIG.FILE_SERVER : 'root'}/data`
-    const userId = req.context.user!.userId
+    const targetFolder = `${CONFIG.IS_FILE_SERVER == true ? CONFIG.FILE_SERVER : 'root'}`
+    const userId = req.context.user.userId
     let folders = filename.split('_')
 
     if (filename.includes('REV')) {
@@ -101,11 +109,10 @@ export const uploadFile: RequestHandler = async (req, res) => {
       let departmentFolder = `${yearOrArchive}/${folders[2]}`
       let documentTypeFolder = `${departmentFolder}/${folders[3]}`
 
-      await createFolder(targetFolder, 0, userId)
-      await createFolder(companyFolder, 1, userId)
-      await createFolder(yearOrArchive, 2, userId)
-      await createFolder(departmentFolder, 3, userId)
-      await createFolder(documentTypeFolder, 4, userId)
+      await createFolder(companyFolder, 0, userId)
+      await createFolder(yearOrArchive, 1, userId)
+      await createFolder(departmentFolder, 2, userId)
+      await createFolder(documentTypeFolder, 3, userId)
 
       decodeBase64ToFile(filecontent, `${documentTypeFolder}/${filename}`)
 
@@ -121,6 +128,27 @@ export const uploadFile: RequestHandler = async (req, res) => {
           },
           omit: {
             fileBase: true,
+          },
+        })
+
+        const folderName = /\w+$/i.exec(documentTypeFolder)!
+        const folderPath = getFolderPath(documentTypeFolder)
+
+        const folder = await prisma.folders.findFirst({
+          where: {
+            AND: [{ folderName: folderName[folderName.length - 1]! }, { folderPath: folderPath }],
+          },
+        })
+
+        if (!folder) {
+          return res.status(400).json({ error: 'Folder not found!' })
+        }
+
+        await prisma.folderFiles.create({
+          data: {
+            ffId: newFileId,
+            ffFolderId: folder.folderId,
+            ffFileId: newFileId,
           },
         })
       })
