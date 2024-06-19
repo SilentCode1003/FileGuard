@@ -79,14 +79,14 @@ model FolderFiles {
 
 model Companies {
   compId             String               @id @map("comp_id") @db.VarChar(100)
-  compName           String               @map("comp_name") @db.Text
+  compName           String               @unique @map("comp_name") @db.VarChar(255)
   compIsActive       Boolean              @default(true)
   companyDepartments CompanyDepartments[]
 }
 
 model Departments {
   deptId             String               @id @map("dept_id") @db.VarChar(100)
-  deptName           String               @map("dept_name") @db.VarChar(60)
+  deptName           String               @unique @map("dept_name") @db.VarChar(255)
   deptIsActive       Boolean              @default(true)
   companyDepartments CompanyDepartments[]
 }
