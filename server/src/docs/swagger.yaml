@@ -122,6 +122,30 @@ paths:
       tags:
         - files
       summary: Get all files
+      parameters:
+        - in: query
+          name: searchText
+          schema:
+            type: string
+          description: The text to search
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Files'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /folders:
     get:
@@ -349,6 +373,29 @@ components:
           example: aofJcp3aUpuQ1m4QXbZHN
         userIsActive:
           type: boolean
+    Files:
+      type: object
+      properties:
+        fileId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        fileUserId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        user:
+          $ref: '#/components/schemas/User'
+        fileName:
+          type: string
+          example: test.txt
+        filePath:
+          type: string
+          example: test.txt
+        createdAt:
+          type: string
+          format: date-time
+          example: 2022-01-01T00:00:00.000Z
     Health:
       type: object
       properties:
