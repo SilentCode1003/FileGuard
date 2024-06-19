@@ -32,16 +32,17 @@ model UserRoles {
 }
 
 model Users {
-  userId       String     @id @map("user_id") @db.VarChar(100)
-  userFullname String     @map("user_fullname") @db.VarChar(60)
-  userUsername String     @unique @map("user_username") @db.VarChar(60)
-  userPassword String     @map("user_password") @db.VarChar(60)
-  userRoleId   String     @map("user_role_id") @db.VarChar(60)
-  role         UserRoles  @relation(fields: [userRoleId], references: [urId])
-  userIsActive Boolean    @default(true) @map("user_is_active")
+  userId       String      @id @map("user_id") @db.VarChar(100)
+  userFullname String      @map("user_fullname") @db.VarChar(60)
+  userUsername String      @unique @map("user_username") @db.VarChar(60)
+  userPassword String      @map("user_password") @db.VarChar(60)
+  userRoleId   String      @map("user_role_id") @db.VarChar(60)
+  role         UserRoles   @relation(fields: [userRoleId], references: [urId])
+  userIsActive Boolean     @default(true) @map("user_is_active")
   userLogs     UserLogs[]
   files        Files[]
   folders      Folders[]
+  Revisions    Revisions[]
 }
 
 model Files {
@@ -54,6 +55,7 @@ model Files {
   createdAt    DateTime       @default(now())
   folderFiles  FolderFiles[]
   fileContents FileContents[]
+  Revisions    Revisions[]
 }
 
 model Folders {
@@ -72,9 +74,9 @@ model Folders {
 model FolderFiles {
   ffId       String  @id @map("ff_id") @db.VarChar(100)
   ffFolderId String  @map("ff_folder_id") @db.VarChar(100)
-  folders    Folders @relation(fields: [ffFolderId], references: [folderId])
+  folders    Folders @relation(fields: [ffFolderId], references: [folderId], onDelete: Cascade)
   ffFileId   String  @map("ff_file_id") @db.VarChar(100)
-  files      Files   @relation(fields: [ffFileId], references: [fileId])
+  files      Files   @relation(fields: [ffFileId], references: [fileId], onDelete: Cascade)
 }
 
 model Companies {
@@ -113,4 +115,16 @@ model FileContents {
   fcFileId  String @map("fc_file_id") @db.VarChar(100)
   file      Files  @relation(fields: [fcFileId], references: [fileId])
   fcContent String @map("fc_content") @db.LongText
+}
+
+model Revisions {
+  revId        String   @id @map("rev_id") @db.VarChar(100)
+  revFileId    String   @map("rev_file_id") @db.VarChar(100)
+  file         Files    @relation(fields: [revFileId], references: [fileId])
+  revFileName  String   @map("rev_file_name") @db.Text
+  revFilePath  String   @map("rev_file_path") @db.Text
+  revFileBase  String   @map("rev_file_base") @db.LongText
+  revCreatedAt DateTime @default(now())
+  revUserId    String   @map("rev_user_id") @db.VarChar(100)
+  user         Users    @relation(fields: [revUserId], references: [userId])
 }
