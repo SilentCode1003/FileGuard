@@ -2,6 +2,7 @@ import type { Express } from 'express'
 import { uploadFile } from '../controller/files.controller'
 import { auth, serviceAuth } from '../middlewares/auth.middleware'
 import { authRouter } from '../routes/auth.route'
+import { departmentsRouter } from '../routes/departments.route'
 import { filesRouter } from '../routes/files.route'
 import { folderFilesRouter } from '../routes/folderFiles.route'
 import { foldersRouter } from '../routes/folders.route'
@@ -21,4 +22,5 @@ export const initRoutes = (app: Express) => {
   app.use('/users', usersRouter)
   app.use('/user-roles', userRolesRouter)
   app.use('/permissions', permissionsRouter)
+  app.use('/departments', departmentsRouter)
 }
