@@ -1,15 +1,38 @@
 import type { RequestHandler } from 'express'
 import { existsSync, writeFile } from 'fs'
 import { prisma } from '../db/prisma'
-import { createFileSchema } from '../schema/files.schema'
+import { createFileSchema, searchFilesSchema } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
 
 import { CONFIG } from '../config/env.config.js'
 import { nanoid } from '../util/nano.util'
 
 export const getFiles: RequestHandler = async (req, res) => {
+  const validatedBody = searchFilesSchema.safeParse(req.query)
+
+  if (!validatedBody.success) {
+    return res.status(400).json({ message: validatedBody.error.errors })
+  }
+
   try {
+    if (!req.query.searchText) {
+      const files = await prisma.files.findMany({
+        omit: {
+          fileBase: true,
+        },
+      })
+      return res.status(200).json({ data: files })
+    }
     const files = await prisma.files.findMany({
+      where: {
+        OR: [
+          {
+            fileName: {
+              contains: validatedBody.data.searchText,
+            },
+          },
+        ],
+      },
       omit: {
         fileBase: true,
       },
@@ -39,7 +62,20 @@ export const createFile: RequestHandler = async (req, res) => {
     await prisma.$transaction(async (prisma) => {
       const filePath = `./root${validatedBody.data.filePath}/${validatedBody.data.fileName}`
 
-      if (existsSync(filePath)) {
+      const checkFile = await prisma.files.findFirst({
+        where: {
+          AND: [
+            {
+              filePath: `root${validatedBody.data.filePath}`,
+            },
+            {
+              fileName: validatedBody.data.fileName,
+            },
+          ],
+        },
+      })
+
+      if (checkFile) {
         // make revision entry of file
         return res.status(400).json({ message: 'File already exists!' })
       } else {
@@ -54,7 +90,7 @@ export const createFile: RequestHandler = async (req, res) => {
             fileBase: validatedBody.data.file,
             fileId: newFileId,
             fileName: validatedBody.data.fileName,
-            filePath: validatedBody.data.filePath,
+            filePath: `root${validatedBody.data.filePath}`,
             fileUserId: req.context.user.userId,
           },
           omit: {
