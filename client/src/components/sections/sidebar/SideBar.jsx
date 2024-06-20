@@ -2,16 +2,12 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useMediaQuery } from 'react-responsive'
-import { useQuery } from '@tanstack/react-query'
-
+import { useGetPath } from '../../../hooks/useGetPath'
 import { IoIosArrowBack, IoMdMenu } from 'react-icons/io'
 import { AiOutlineAppstore } from 'react-icons/ai'
 import Logo from '/img/file-guard-logo.png'
-
 import SideBarSubMenu from './SideBarSubMenu'
-import { apiClient } from '../../../lib/api-client'
 import Spinner from '../../utility/Spinner'
-import FolderIcon from '../../utility/FolderIcon'
 
 const SideBar = () => {
   let isTab = useMediaQuery({ maxWidth: 768 })
@@ -61,16 +57,7 @@ const SideBar = () => {
     }
   }, [isTab])
 
-  const folderPath = '/'
-  const { isLoading, data, error } = useQuery({
-    queryKey: ['root', folderPath],
-    queryFn: async () => {
-      const queryParams = new URLSearchParams({ folderPath })
-      const res = await apiClient.get('/folders?' + queryParams)
-
-      return res.data.data
-    },
-  })
+  const { isLoading, data, error } = useGetPath('folders', '/')
 
   if (isLoading) {
     return (
@@ -81,7 +68,7 @@ const SideBar = () => {
   }
 
   if (error) {
-    return <h1>Error</h1>
+    return <h1>Error: {error}</h1>
   }
 
   const rootPath = data.map((folder) => ({
