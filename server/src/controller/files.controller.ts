@@ -7,6 +7,7 @@ import {
   createFileSchema,
   createRevisionsSchema,
   getFilesByPathSchema,
+  getRevisionsByFileIdSchema,
   searchFilesSchema,
 } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
@@ -37,6 +38,28 @@ export const getFilesByPath: RequestHandler = async (req, res) => {
       },
     })
     return res.status(200).json({ data: files })
+  } catch (error) {
+    return res.status(500).json({ message: error })
+  }
+}
+
+export const getRevisionsByFileId: RequestHandler = async (req, res) => {
+  const validatedBody = getRevisionsByFileIdSchema.safeParse(req.query)
+
+  if (!validatedBody.success) {
+    return res.status(400).json({ message: validatedBody.error.errors })
+  }
+
+  try {
+    const revisions = await prisma.revisions.findMany({
+      where: {
+        revFileId: validatedBody.data.revFileId,
+      },
+      omit: {
+        revFileBase: true,
+      },
+    })
+    return res.status(200).json({ data: revisions })
   } catch (error) {
     return res.status(500).json({ message: error })
   }
@@ -303,7 +326,7 @@ export const uploadFile: RequestHandler = async (req, res) => {
                 revFilePath: documentTypeFolder,
               },
               {
-                revFileName: filename,
+                revFileName: revFileName,
               },
             ],
           },
@@ -336,7 +359,7 @@ export const uploadFile: RequestHandler = async (req, res) => {
           data: {
             revFileBase: filecontent,
             revFileId: checkFile.fileId,
-            revFileName: filename,
+            revFileName,
             revFilePath: documentTypeFolder,
             revUserId: userId,
             revId: newRevId,
@@ -357,7 +380,7 @@ export const uploadFile: RequestHandler = async (req, res) => {
         })
 
         //write file to disk
-        decodeBase64ToFile(filecontent, `${documentTypeFolder}/${filename}`)
+        decodeBase64ToFile(filecontent, `${documentTypeFolder}/${revFileName}`)
 
         return res.status(200).send({ message: 'Revision passed' })
       })

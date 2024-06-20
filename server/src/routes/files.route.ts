@@ -3,6 +3,7 @@ import {
   createFile,
   createRevisions,
   getFilesByPath,
+  getRevisionsByFileId,
   searchFiles,
 } from '../controller/files.controller'
 
@@ -13,5 +14,7 @@ filesRouter.get('/', getFilesByPath)
 filesRouter.get('/search-files', searchFiles)
 
 filesRouter.post('/', createFile)
+
+filesRouter.get('/revisions', getRevisionsByFileId)
 
 filesRouter.post('/revisions', createRevisions)

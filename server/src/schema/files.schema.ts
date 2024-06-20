@@ -16,7 +16,11 @@ export const searchFilesSchema = z.object({
 })
 
 export const getFilesByPathSchema = z.object({
-  filePath: z.string({ required_error: 'filePath is required' }).optional(),
+  filePath: z.string().optional(),
+})
+
+export const getRevisionsByFileIdSchema = z.object({
+  revFileId: z.string({ required_error: 'fileId is required' }),
 })
 
 export const createRevisionsSchema = z.object({
