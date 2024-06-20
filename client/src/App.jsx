@@ -13,6 +13,7 @@ import FullWidthLayout from './layouts/FullWidthLayout'
 //Main Layout Contents
 import DashBoard from './pages/DashBoard'
 import Browse from './pages/Browse'
+import AdvancedSearch from './pages/AdvancedSearch'
 
 //Full Width Layout Contents
 import Login from './pages/Login'
@@ -24,6 +25,7 @@ function App() {
       <>
         <Route path="/" element={<MainLayout />}>
           <Route path="/" element={<DashBoard />} />
+          <Route path="/search" element={<AdvancedSearch />} />
           <Route path="/browse/*" element={<Browse />} />
         </Route>
         <Route path="/" element={<FullWidthLayout />}>
