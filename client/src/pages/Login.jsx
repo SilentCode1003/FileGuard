@@ -1,8 +1,16 @@
-import Logo from '../assets/img/file-guard-logo.png'
+import { useNavigate, useLocation } from 'react-router-dom'
+
+import { ToastContainer, toast, Slide } from 'react-toastify'
+
+import Logo from '/img/file-guard-logo.png'
 import { useState } from 'react'
 import { apiClient } from '../lib/api-client'
 
 const Login = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from?.pathname || '/'
+
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
@@ -10,9 +18,20 @@ const Login = () => {
     e.preventDefault()
 
     try {
-      await apiClient.post('/auth/login', { username, password })
+      const res = await apiClient.post('/auth/login', { username, password })
+      setUsername('')
+      setPassword('')
+      if (res?.status === 200) {
+        toast.success('Login successful')
+        navigate(from, { replace: true })
+        // console.log(res)
+      }
     } catch (err) {
-      console.log(err)
+      if (!err?.response) {
+        toast.error('No server Response')
+      } else if (err.response?.status === 401) {
+        toast.error('Unauthorized')
+      }
     }
   }
 
@@ -78,6 +97,7 @@ const Login = () => {
           </div>
         </div>
       </div>
+      <ToastContainer transition={Slide} />
     </>
   )
 }

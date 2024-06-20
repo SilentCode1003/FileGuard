@@ -9,21 +9,21 @@ export const getFolders: RequestHandler = async (req, res) => {
   const validatedBody = getFoldersSchema.safeParse(req.query)
 
   if (!validatedBody.success) {
-    return res.status(400).json({ error: validatedBody.error.errors[0]?.message })
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
   }
 
   try {
     const folders = await prisma.folders.findMany({
       where: {
-        folderPath: validatedBody.data.folderPath,
+        folderPath: `root${validatedBody.data.folderPath}`,
       },
     })
     return res.status(200).json({ data: folders })
   } catch (error) {
     if (error instanceof Error) {
-      return res.status(400).json({ error: error.message })
+      return res.status(400).json({ message: error.message })
     }
-    return res.status(500).json({ error })
+    return res.status(500).json({ message: error })
   }
 }
 
@@ -34,7 +34,7 @@ export const createFolder: RequestHandler = async (req, res) => {
   })
 
   if (!validatedBody.success) {
-    return res.status(400).json({ error: validatedBody.error.errors[0]?.message })
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
   }
 
   try {
@@ -64,18 +64,22 @@ export const createFolder: RequestHandler = async (req, res) => {
         const folder = await prisma.folders.create({
           data: {
             ...validatedBody.data,
+            folderPath:
+              validatedBody.data.folderPath === '/'
+                ? 'root'
+                : `root${validatedBody.data.folderPath}`,
             folderId: newFolderId,
             folderUserId: req.context.user!.userId,
             folderParentId: validatedBody.data.folderParentId ?? null,
           },
         })
-        return res.status(200).json({ folder })
+        return res.status(200).json({ data: folder })
       } else throw new Error('Folder already exists')
     })
   } catch (error) {
     if (error instanceof Error) {
-      return res.status(400).json({ error: error.message })
+      return res.status(400).json({ message: error.message })
     }
-    return res.status(500).json({ error })
+    return res.status(500).json({ message: error })
   }
 }

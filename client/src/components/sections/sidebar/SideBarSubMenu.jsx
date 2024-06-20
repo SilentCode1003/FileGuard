@@ -23,7 +23,7 @@ const SideBarSubMenu = ({ data, currentPath = '' }) => {
     e.preventDefault()
     setSubMenuOpen((prev) => !prev)
     navigate(fullPath)
-    console.log(fullPath)
+    // console.log(fullPath)
   }
 
   return (

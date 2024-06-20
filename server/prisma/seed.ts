@@ -26,21 +26,9 @@ const seedUser = async (adminRoleId: string) => {
   })
 }
 
-const seedPermissions = (adminRoleId: string) => {
-  return prisma.permissions.create({
-    data: {
-      permId: nanoid(),
-      permUrId: adminRoleId,
-      permFolderId: nanoid(), // Dummy folder id
-      permIsActive: true,
-    },
-  })
-}
-
 const main = async () => {
   const userRole = await seedUserRole()
   await seedUser(userRole.urId)
-  await seedPermissions(userRole.urId)
 }
 
 main()
