@@ -2,6 +2,8 @@ import { FaSearch } from 'react-icons/fa'
 import { Menu, MenuButton, MenuItems, Transition } from '@headlessui/react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { FaRegUser } from 'react-icons/fa'
+import { TbDeviceImacSearch } from "react-icons/tb";
+
 
 import { SlLogout, SlSettings } from 'react-icons/sl'
 import { useLogout } from '../../api/auth/logout'
@@ -43,6 +45,12 @@ const TopBar = () => {
               </div>
             </div>
 
+            <NavLink to="/search">
+            <div>
+              <h6 className='py-2 px-8 text-red-600 hover:scale-[1.1]'><TbDeviceImacSearch size={25} /></h6>
+            </div>
+
+            </NavLink>
             <div className="md:ml-auto">
               <div className="flex space-x-4">
                 <Menu>
