@@ -1,12 +1,11 @@
 import express from 'express'
-import { 
-    getAllCompanies, 
-    createCompanies,
-    updateCompaniesById,
-    getCompaniesById,
-    toggleCompaniesById
-     } from '../controller/companies.controller'
-
+import {
+  getAllCompanies,
+  createCompanies,
+  updateCompaniesById,
+  getCompaniesById,
+  toggleCompaniesById,
+} from '../controller/companies.controller'
 
 export const companyRouter = express.Router()
 
