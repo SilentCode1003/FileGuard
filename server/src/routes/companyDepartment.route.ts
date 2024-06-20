@@ -15,6 +15,6 @@ CompanyDepartmentRouter.post('/', createCompanyDepartment)
 
 CompanyDepartmentRouter.get('/:id', getCompanyDepartmentById)
 
-CompanyDepartmentRouter.put('/:id', updateCompanyDepartmentById)
+CompanyDepartmentRouter.put('/:cdId', updateCompanyDepartmentById)
 
-CompanyDepartmentRouter.put('/:id/toggle', toggleCompanyDepartmentById)
+CompanyDepartmentRouter.put('/toggle/:cdId/', toggleCompanyDepartmentById)

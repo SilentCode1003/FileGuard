@@ -1,7 +1,9 @@
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import type { RequestHandler } from 'express'
 import { prisma } from '../db/prisma'
-import { companyDepartmentIdSchema, createCompanyDepartmentSchema } from '../schema/companyDepartment.schema'
+import { companyDepartmentIdSchema, createCompanyDepartmentSchema,
+  updateCompanyDepartmentSchema, toggleCompanyDepartmentSchema
+ } from '../schema/companyDepartment.schema'
 import { nanoid } from '../util/nano.util'
 
 
@@ -73,14 +75,12 @@ export const createCompanyDepartment: RequestHandler = async (req, res, next) =>
   }
 
 
-  export const updateCompanyDepartmentById: RequestHandler = async (req, res, next) => {
-    const validatedId = companyDepartmentIdSchema.safeParse(req.params)
-  
-    if (!validatedId.success) {
-      return res.status(400).json({ message: validatedId.error.errors[0]?.message })
-    }
-  
-    const validatedBody = createCompanyDepartmentSchema.safeParse(req.body)
+
+  export const updateCompanyDepartmentById: RequestHandler = async (req, res) => {
+    const validatedBody = updateCompanyDepartmentSchema.safeParse({
+      ...req.body,
+      cdId: req.params.cdId,
+    })
   
     if (!validatedBody.success) {
       return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
@@ -88,24 +88,21 @@ export const createCompanyDepartment: RequestHandler = async (req, res, next) =>
   
     try {
       const companyDepartment = await prisma.companyDepartments.update({
-        where: {
-          cdId: validatedId.data.id,
-        },
+        where: { cdId: req.params.cdId },
         data: {
           ...validatedBody.data,
         },
       })
-  
-      res.status(200).json({ data: companyDepartment })
+      return res.status(200).json({ data: companyDepartment })
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError) {
         switch (err.code) {
           case 'P2002':
-            return res.status(400).json({ message: 'companyDepartment already exists' })
+            return res.status(400).json({ message: 'User already exists' })
           case 'P2003':
             return res.status(400).json({ message: 'Foreign key does not exist' })
           case 'P2025':
-            return res.status(400).json({ message: 'companyDepartment to update not found' })
+            return res.status(400).json({ message: 'User to update not found' })
           default:
             return res.status(400).json({ message: 'Prisma client error' })
         }
@@ -114,98 +111,28 @@ export const createCompanyDepartment: RequestHandler = async (req, res, next) =>
   }
 
 
-  export const toggleCompanyDepartmentById: RequestHandler = async (req, res, next) => {
-    const validatedId = companyDepartmentIdSchema.safeParse(req.params)
+  export const toggleCompanyDepartmentById: RequestHandler = async (req, res) => {
+    const validatedBody = toggleCompanyDepartmentSchema.safeParse({
+      cdId: req.params.cdId,
+    })
   
-    if (!validatedId.success) {
-      return res.status(400).json({ message: validatedId.error.errors[0]?.message })
+    if (!validatedBody.success) {
+      return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
     }
   
     try {
-      const currentCompanyDepartment = await prisma.companyDepartments.findUnique({
-        where: {
-          cdId: validatedId.data.id,
-        },
+      const currentcompanyDepartment = await prisma.companyDepartments.findUnique({
+        where: { cdId: validatedBody.data.cdId },
       })
-  
-      if (!currentCompanyDepartment) {
-        return res.status(404).json({ message: 'currentCompanyDepartment not found' })
-      }
-  
-      const CompanyDepartment = await prisma.companyDepartments.update({
-        where: {
-          cdId: validatedId.data.id,
-        },
+      const companyDepartment = await prisma.companyDepartments.update({
+        where: { cdId: validatedBody.data.cdId },
         data: {
-          cdIsActive: !currentCompanyDepartment.cdIsActive,
+          cdIsActive: !currentcompanyDepartment?.cdIsActive,
         },
       })
-  
-      res.status(200).json({ data: CompanyDepartment })
+      return res.status(200).json({ data: companyDepartment })
     } catch (err) {
-      if (err instanceof PrismaClientKnownRequestError) {
-        switch (err.code) {
-          case 'P2002':
-            return res.status(400).json({ message: 'Permission already exists' })
-          case 'P2025':
-            return res.status(400).json({ message: 'Permission to toggle not found' })
-          default:
-            return res.status(400).json({ message: 'Prisma client error' })
-        }
-      }
+      return res.status(500).json({ message: err })
     }
   }
-
-
-
-  // export const createCompanyDepartment: RequestHandler = async (req, res, next) => {
-//   const validatedBody = createCompanyDepartmentSchema.safeParse(req.body)
-
-//   if (!validatedBody.success) {
-//     return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
-//   }
-
-//   const { companyName, departmentName, ...rest } = validatedBody.data
-
-//   try {
-//     const company = await prisma.companies.create({
-//       data: {
-//         compId: nanoid(),
-//         compName: companyName,
-//         compIsActive: true,
-//       },
-//     })
-
-//     const department = await prisma.departments.create({
-//       data: {
-//         deptId: nanoid(),
-//         deptName: departmentName,
-//         deptIsActive: true,
-//       },
-//     })
-
-//     const companyDepartment = await prisma.companyDepartments.create({
-//         data: {
-//           cdId: nanoid(),
-//           cdCompId: company.compId,
-//           cdDeptId: department.deptId,
-//           cdIsActive: true,
-//           ...rest,
-//         },
-//       });
-
-//     res.status(200).json({ data: companyDepartment })
-//   } catch (err) {
-//     if (err instanceof PrismaClientKnownRequestError) {
-//       switch (err.code) {
-//         case 'P2002':
-//           return res.status(400).json({ message: 'Permission already exists' })
-//         case 'P2003':
-//           return res.status(400).json({ message: 'Foreign key does not exist' })
-//         default:
-//           return res.status(400).json({ message: 'Prisma client error' })
-//       }
-//     }
-//     next(err)
-//   }
-// }
+  
