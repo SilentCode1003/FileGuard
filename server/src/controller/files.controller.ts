@@ -1,10 +1,10 @@
+import type { Files, Revisions } from '@prisma/client'
 import type { RequestHandler } from 'express'
 import { writeFile } from 'fs'
+import { CONFIG } from '../config/env.config.js'
 import { prisma } from '../db/prisma'
 import { createFileSchema, createRevisionsSchema, searchFilesSchema } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
-import type { Files, Revisions } from '@prisma/client'
-import { CONFIG } from '../config/env.config.js'
 import { nanoid } from '../util/nano.util'
 
 export const getFiles: RequestHandler = async (req, res) => {
@@ -225,31 +225,23 @@ export const createRevisions: RequestHandler = async (req, res) => {
 
 export const uploadFile: RequestHandler = async (req, res) => {
   try {
-    const { filename, filecontent } = req.body
+    const { filename, filecontent } = req.body as { filename: string; filecontent: string }
     const targetFolder = `${CONFIG.IS_FILE_SERVER == true ? CONFIG.FILE_SERVER : 'root'}`
     const userId = req.context.user.userId
     let folders = filename.split('_')
 
+    let companyFolder = `${targetFolder}/${folders[0]}`
+    let yearOrArchive = `${companyFolder}/${folders[1]}`
+    let departmentFolder = `${yearOrArchive}/${folders[2]}`
+    let documentTypeFolder = `${departmentFolder}/${folders[3]}`
+
     if (filename.includes('REV')) {
+      const revFileName = filename
+      const origFileName = filename.replace(/\_REV[\S\s]+\./i, '.')
       console.log('File Revision detected!')
-    }
-
-    if (folders.length > 4) {
-      // console.log(folders[0], folders[1], folders[2], folders[3])
-      let companyFolder = `${targetFolder}/${folders[0]}`
-      let yearOrArchive = `${companyFolder}/${folders[1]}`
-      let departmentFolder = `${yearOrArchive}/${folders[2]}`
-      let documentTypeFolder = `${departmentFolder}/${folders[3]}`
-
-      await createFolder(companyFolder, 0, userId)
-      await createFolder(yearOrArchive, 1, userId)
-      await createFolder(departmentFolder, 2, userId)
-      await createFolder(documentTypeFolder, 3, userId)
-
-      decodeBase64ToFile(filecontent, `${documentTypeFolder}/${filename}`)
 
       await prisma.$transaction(async (prisma) => {
-        const newFileId = nanoid()
+        //check if target file for revision exists
 
         const checkFile = await prisma.files.findFirst({
           where: {
@@ -258,16 +250,35 @@ export const uploadFile: RequestHandler = async (req, res) => {
                 filePath: documentTypeFolder,
               },
               {
-                fileName: filename,
+                fileName: origFileName,
               },
             ],
           },
         })
 
-        if (checkFile) {
-          throw new Error('File already exists!')
+        if (!checkFile) {
+          throw new Error('Original file not found!')
         }
 
+        //check if revision file exists
+        const checkRev = await prisma.revisions.findFirst({
+          where: {
+            AND: [
+              {
+                revFilePath: documentTypeFolder,
+              },
+              {
+                revFileName: filename,
+              },
+            ],
+          },
+        })
+
+        if (checkRev) {
+          throw new Error('Revision already exists!')
+        }
+
+        //check if folder exists
         const folderName = /\w+$/i.exec(documentTypeFolder)!
         const folderPath = getFolderPath(documentTypeFolder)
 
@@ -277,35 +288,114 @@ export const uploadFile: RequestHandler = async (req, res) => {
           },
         })
 
+        console.log(folder?.folderPath)
+        console.log(documentTypeFolder)
+
         if (!folder) {
           throw new Error('Folder not found!')
         }
 
-        await prisma.files.create({
+        //create new revision
+        const newRevId = nanoid()
+        await prisma.revisions.create({
           data: {
-            fileBase: filecontent,
-            fileId: newFileId,
-            fileName: filename,
-            filePath: documentTypeFolder,
-            fileUserId: userId,
+            revFileBase: filecontent,
+            revFileId: checkFile.fileId,
+            revFileName: filename,
+            revFilePath: documentTypeFolder,
+            revUserId: userId,
+            revId: newRevId,
           },
           omit: {
-            fileBase: true,
+            revFileBase: true,
           },
         })
 
+        //create new folder file
         const newFolderFileId = nanoid()
         await prisma.folderFiles.create({
           data: {
             ffId: newFolderFileId,
             ffFolderId: folder.folderId,
-            ffFileId: newFileId,
+            ffRevId: newRevId,
           },
         })
+
+        //write file to disk
+        decodeBase64ToFile(filecontent, `${documentTypeFolder}/${filename}`)
+
+        return res.status(200).send({ message: 'Revision passed' })
       })
-      return res.status(200).send({ message: 'Upload Success' })
     } else {
-      console.log('Incorrect Filename!', filename)
+      if (folders.length > 4) {
+        // console.log(folders[0], folders[1], folders[2], folders[3])
+
+        await createFolder(companyFolder, 0, userId)
+        await createFolder(yearOrArchive, 1, userId)
+        await createFolder(departmentFolder, 2, userId)
+        await createFolder(documentTypeFolder, 3, userId)
+
+        decodeBase64ToFile(filecontent, `${documentTypeFolder}/${filename}`)
+
+        await prisma.$transaction(async (prisma) => {
+          const newFileId = nanoid()
+
+          const checkFile = await prisma.files.findFirst({
+            where: {
+              AND: [
+                {
+                  filePath: documentTypeFolder,
+                },
+                {
+                  fileName: filename,
+                },
+              ],
+            },
+          })
+
+          if (checkFile) {
+            throw new Error('File already exists!')
+          }
+
+          const folderName = /\w+$/i.exec(documentTypeFolder)!
+          const folderPath = getFolderPath(documentTypeFolder)
+
+          const folder = await prisma.folders.findFirst({
+            where: {
+              AND: [{ folderName: folderName[folderName.length - 1]! }, { folderPath: folderPath }],
+            },
+          })
+
+          if (!folder) {
+            throw new Error('Folder not found!')
+          }
+
+          await prisma.files.create({
+            data: {
+              fileBase: filecontent,
+              fileId: newFileId,
+              fileName: filename,
+              filePath: documentTypeFolder,
+              fileUserId: userId,
+            },
+            omit: {
+              fileBase: true,
+            },
+          })
+
+          const newFolderFileId = nanoid()
+          await prisma.folderFiles.create({
+            data: {
+              ffId: newFolderFileId,
+              ffFolderId: folder.folderId,
+              ffFileId: newFileId,
+            },
+          })
+        })
+        return res.status(200).send({ message: 'Upload Success' })
+      } else {
+        console.log('Incorrect Filename!', filename)
+      }
     }
   } catch (error) {
     if (error instanceof Error) {
