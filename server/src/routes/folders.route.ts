@@ -3,6 +3,6 @@ import { createFolder, getFolders } from '../controller/folder.controller'
 
 export const foldersRouter = express.Router()
 
-foldersRouter.get('/:folderId', getFolders)
+foldersRouter.get('/', getFolders)
 
 foldersRouter.post('/', createFolder)
