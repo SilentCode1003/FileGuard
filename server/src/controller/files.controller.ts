@@ -1,6 +1,7 @@
 import type { Files, Revisions } from '@prisma/client'
 import type { RequestHandler } from 'express'
-import { writeFile } from 'fs'
+import { readFileSync, writeFile } from 'fs'
+import { writeFile as asyncWriteFile } from 'fs/promises'
 import { CONFIG } from '../config/env.config.js'
 import { prisma } from '../db/prisma'
 import {
@@ -12,6 +13,7 @@ import {
 } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
 import { nanoid } from '../util/nano.util'
+import PdfParse from 'pdf-parse'
 
 export const getFilesByPath: RequestHandler = async (req, res) => {
   const validatedBody = getFilesByPathSchema.safeParse(req.query)
@@ -133,11 +135,6 @@ export const createFile: RequestHandler = async (req, res) => {
         if (checkFile) {
           throw new Error('File already exists!')
         } else {
-          writeFile(filePath, file, (err) => {
-            if (err) throw err
-            console.log('The file has been saved!')
-          })
-
           const newFileId = nanoid()
           const newFile = await prisma.files.create({
             data: {
@@ -172,6 +169,20 @@ export const createFile: RequestHandler = async (req, res) => {
               ffId: newFolderFileId,
               ffFolderId: folder.folderId,
               ffFileId: newFileId,
+            },
+          })
+
+          await asyncWriteFile(filePath, file)
+
+          let databuffer = readFileSync(filePath)
+          const content = (await PdfParse(databuffer)).text.replaceAll(/\s+/g, '')
+
+          const newFileContentId = nanoid()
+          await prisma.fileContents.create({
+            data: {
+              fcId: newFileContentId,
+              fcFileId: newFileId,
+              fcContent: content,
             },
           })
 
