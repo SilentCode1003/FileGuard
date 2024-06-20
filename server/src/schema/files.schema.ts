@@ -15,6 +15,10 @@ export const searchFilesSchema = z.object({
   searchText: z.string().optional(),
 })
 
+export const getFilesByPathSchema = z.object({
+  filePath: z.string({ required_error: 'filePath is required' }).optional(),
+})
+
 export const createRevisionsSchema = z.object({
   files: z.array(
     z.object({
