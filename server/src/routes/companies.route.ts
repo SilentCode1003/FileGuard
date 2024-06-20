@@ -16,6 +16,6 @@ companyRouter.post('/', createCompanies)
 
 companyRouter.get('/:id', getCompaniesById)
 
-companyRouter.put('/:id', updateCompaniesById)
+companyRouter.put('/:compId', updateCompaniesById)
 
-companyRouter.put('/toggle/:id', toggleCompaniesById)
+companyRouter.put('/toggle/:compId', toggleCompaniesById)
