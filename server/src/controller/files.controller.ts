@@ -1,10 +1,10 @@
+import type { Files, Revisions } from '@prisma/client'
 import type { RequestHandler } from 'express'
 import { writeFile } from 'fs'
+import { CONFIG } from '../config/env.config.js'
 import { prisma } from '../db/prisma'
 import { createFileSchema, createRevisionsSchema, searchFilesSchema } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
-import type { Files, Revisions } from '@prisma/client'
-import { CONFIG } from '../config/env.config.js'
 import { nanoid } from '../util/nano.util'
 
 export const getFiles: RequestHandler = async (req, res) => {
