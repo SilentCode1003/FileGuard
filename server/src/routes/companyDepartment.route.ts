@@ -1,20 +1,20 @@
 import express from 'express'
-import { 
-    createCompanyDepartment, 
-    getAllCompanyDepartment, 
-    getCompanyDepartmentById, 
-    toggleCompanyDepartmentById, 
-    updateCompanyDepartmentById 
+import {
+  createCompanyDepartment,
+  getAllCompanyDepartment,
+  getCompanyDepartmentById,
+  toggleCompanyDepartmentById,
+  updateCompanyDepartmentById,
 } from '../controller/companyDepartment.controller'
 
-export const CompanyDepartmentRouter = express.Router()
+export const companyDepartmentRouter = express.Router()
 
-CompanyDepartmentRouter.get('/', getAllCompanyDepartment)
+companyDepartmentRouter.get('/', getAllCompanyDepartment)
 
-CompanyDepartmentRouter.post('/', createCompanyDepartment)
+companyDepartmentRouter.post('/', createCompanyDepartment)
 
-CompanyDepartmentRouter.get('/:id', getCompanyDepartmentById)
+companyDepartmentRouter.get('/:id', getCompanyDepartmentById)
 
-CompanyDepartmentRouter.put('/:cdId', updateCompanyDepartmentById)
+companyDepartmentRouter.put('/:cdId', updateCompanyDepartmentById)
 
-CompanyDepartmentRouter.put('/toggle/:cdId/', toggleCompanyDepartmentById)
+companyDepartmentRouter.put('/toggle/:cdId/', toggleCompanyDepartmentById)
