@@ -4,7 +4,7 @@ import { createDepartmentSchema, departmentIdSchema } from '../schema/department
 import { nanoid } from '../util/nano.util'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 
-export const getAllDeparments: RequestHandler = async (req, res, next) => {
+export const getAllDepartments: RequestHandler = async (req, res, next) => {
   try {
     const departments = await prisma.departments.findMany()
 

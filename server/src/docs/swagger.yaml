@@ -17,6 +17,9 @@ tags:
   - permissions
   - departments
   - user-logs
+  - folder-files
+  - companies
+  - company-departments
 
 paths:
   /auth/me:
@@ -124,10 +127,10 @@ paths:
       summary: Get all files
       parameters:
         - in: query
-          name: searchText
+          name: filePath
           schema:
             type: string
-          description: The text to search
+          description: The path of the file to get
       responses:
         '200':
           description: Successful operation
@@ -166,8 +169,6 @@ paths:
                         type: string
                       fileName:
                         type: string
-                      fileMimeType:
-                        type: string
                       filePath:
                         type: string
         responses:
@@ -194,6 +195,115 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/ErrorResponse'
+
+  /files/search-files:
+    get:
+      tags:
+        - files
+      summary: Search files
+      parameters:
+        - in: query
+          name: searchText
+          schema:
+            type: string
+          description: The text to search
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Files'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /files/revisions:
+    get:
+      tags:
+        - files
+      summary: Get all revisions of a file
+      parameters:
+        - in: query
+          name: revFileId
+          schema:
+            type: string
+          description: The id of the file to get revisions for
+          required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Revisions'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - files
+      summary: Create a revision of a file
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  revFile:
+                    type: string
+                    format: base64
+                  revFileName:
+                    type: string
+                  revFilePath:
+                    type: string
+                  revFileId:
+                    type: string
+                    format: nanoid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Revisions'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /folders:
     get:
@@ -265,6 +375,79 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/Folders'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /folder-files:
+    post:
+      tags:
+        - folder-files
+      summary: Create a folder file
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: base64
+                fileName:
+                  type: string
+              required:
+                - file
+                - fileName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FolderFiles'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /folder-files/{ffFolderId}:
+    get:
+      tags:
+        - folder-files
+      summary: Get all folder files
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FolderFiles'
         '400':
           description: Invalid data
           content:
@@ -799,11 +982,551 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /companies:
+    get:
+      tags:
+        - companies
+      summary: Get all companies
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Companies'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - companies
+      summary: Create a company
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                compName:
+                  type: string
+              required:
+                - compName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Companies'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /companies/{id}:
+    get:
+      tags:
+        - companies
+      summary: Get a company by id
+      parameters:
+        - name: id
+          in: path
+          description: Company ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Companies'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /companies/{compId}:
+    put:
+      tags:
+        - companies
+      summary: Update a company
+      parameters:
+        - name: id
+          in: path
+          description: Company ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                compName:
+                  type: string
+              required:
+                - compName
+
+  /companies/toggle/{compId}:
+    put:
+      tags:
+        - companies
+      summary: Toggle company isActive state
+      parameters:
+        - name: id
+          in: path
+          description: Company ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Companies'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /departments:
     get:
       tags:
         - departments
       summary: Get all departments
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Departments'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - departments
+      summary: Create a department
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                depName:
+                  type: string
+              required:
+                - depName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Departments'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /departments/{id}:
+    get:
+      tags:
+        - departments
+      summary: Get a department by id
+      parameters:
+        - name: id
+          in: path
+          description: Department ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Departments'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Department not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - departments
+      summary: Update a department
+      parameters:
+        - name: id
+          in: path
+          description: Department ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                depName:
+                  type: string
+              required:
+                - depName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Departments'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Department not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /departments/{id}/toggle:
+    put:
+      tags:
+        - departments
+      summary: Toggle department isActive state
+      parameters:
+        - name: id
+          in: path
+          description: Department ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Departments'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Department not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /company-departments:
+    get:
+      tags:
+        - company-departments
+      summary: Get all company departments
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CompanyDepartments'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - company-departments
+      summary: Create a company department
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cdCompId:
+                  type: string
+                cdDeptId:
+                  type: string
+              required:
+                - cdCompId
+                - cdDeptId
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CompanyDepartments'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /company-departments/{id}:
+    get:
+      tags:
+        - company-departments
+      summary: Get a company departments
+      parameters:
+        - name: id
+          in: path
+          description: Company Department ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CompanyDepartments'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company Department not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /company-departments/{cdId}/:
+    put:
+      tags:
+        - company-departments
+      summary: Update a company department
+      parameters:
+        - name: cdId
+          in: path
+          description: Company Department ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cdCompId:
+                  type: string
+                cdDeptId:
+                  type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CompanyDepartments'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company Department not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /company-departments/toggle/{cdId}/:
+    put:
+      tags:
+        - company-departments
+      summary: Toggle company department isActive state
+      parameters:
+        - name: cdId
+          in: path
+          description: Company Department ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CompanyDepartments'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Company Department not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /user-logs:
     get:
@@ -911,6 +1634,34 @@ components:
           type: string
           format: date-time
           example: '2022-01-01T00:00:00.000Z'
+    Revisions:
+      type: object
+      properties:
+        revId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        revFileId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        revFileName:
+          type: string
+          example: test.txt
+        revFilePath:
+          type: string
+          example: test.txt
+        revFileBase:
+          type: string
+          example: test.txt
+        revCreatedAt:
+          type: string
+          format: date-time
+          example: '2022-01-01T00:00:00.000Z'
+        revUserId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
     Folders:
       type: object
       properties:
@@ -940,6 +1691,28 @@ components:
           type: string
           format: date-time
           example: '2022-01-01T00:00:00.000Z'
+    FolderFiles:
+      type: object
+      properties:
+        ffId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        ffFolderId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        ffFileId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        ffRevId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+      required:
+        - ffId
+        - ffFolderId
     Health:
       type: object
       properties:
@@ -1001,6 +1774,47 @@ components:
           example: aofJcp3aUpuQ1m4QXbZHN
         permIsActive:
           type: boolean
+    Companies:
+      type: object
+      properties:
+        compId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        compName:
+          type: string
+          example: test
+        compIsActive:
+          type: boolean
+    Departments:
+      type: object
+      properties:
+        depId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        depName:
+          type: string
+          example: test
+        depIsActive:
+          type: boolean
+    CompanyDepartments:
+      type: object
+      properties:
+        cdId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        cdCompId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        cdDeptId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        cdIsActive:
+          type: boolean
     UserLogs:
       type: object
       properties:
@@ -1031,5 +1845,15 @@ components:
       properties:
         data:
           oneOf:
+            - $ref: '#/components/schemas/Company'
+            - $ref: '#/components/schemas/Department'
+            - $ref: '#/components/schemas/CompanyDepartment'
             - $ref: '#/components/schemas/User'
+            - $ref: '#/components/schemas/UserLog'
+            - $ref: '#/components/schemas/Permission'
+            - $ref: '#/components/schemas/Role'
+            - $ref: '#/components/schemas/Folder'
+            - $ref: '#/components/schemas/FolderFile'
+            - $ref: '#/components/schemas/File'
+            - $ref: '#/components/schemas/Revision'
             - $ref: '#/components/schemas/Health'

@@ -1,7 +1,7 @@
 import express from 'express'
 import {
   createDepartment,
-  getAllDeparments,
+  getAllDepartments,
   getDepartmentById,
   toggleDepartmentById,
   updateDepartmentById,
@@ -9,7 +9,7 @@ import {
 
 export const departmentsRouter = express.Router()
 
-departmentsRouter.get('/', getAllDeparments)
+departmentsRouter.get('/', getAllDepartments)
 
 departmentsRouter.post('/', createDepartment)
 
