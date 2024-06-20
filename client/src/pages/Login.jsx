@@ -1,10 +1,11 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Navigate } from 'react-router-dom'
 
 import { ToastContainer, toast, Slide } from 'react-toastify'
 
 import Logo from '/img/file-guard-logo.png'
 import { useState } from 'react'
-import { apiClient } from '../lib/api-client'
+import { useLogin } from '../api/auth/login'
+import { useUser } from '../hooks/useUser'
 
 const Login = () => {
   const navigate = useNavigate()
@@ -14,25 +15,33 @@ const Login = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
+  const { data: user, isLoading } = useUser()
+  const { mutateAsync: login } = useLogin()
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     try {
-      const res = await apiClient.post('/auth/login', { username, password })
+      await login({ username, password })
       setUsername('')
       setPassword('')
-      if (res?.status === 200) {
-        toast.success('Login successful')
-        navigate(from, { replace: true })
-        // console.log(res)
-      }
+      toast.success('Login successful')
+      navigate(from, { replace: true })
     } catch (err) {
       if (!err?.response) {
         toast.error('No server Response')
       } else if (err.response?.status === 401) {
-        toast.error('Unauthorized')
+        toast.error(err.response.data.message)
       }
     }
+  }
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (user?.data.isLogged) {
+    return <Navigate to="/" replace />
   }
 
   return (
