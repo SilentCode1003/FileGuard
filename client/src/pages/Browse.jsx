@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDropzone } from 'react-dropzone'
 import { nanoid } from 'nanoid'
 import { FaFolderOpen } from 'react-icons/fa6'
+import { fileToBase64, splitPath } from '../utiliy/utility'
 
 import File from '../components/browse/file/File'
 import Folder from '../components/browse/Folder'
@@ -30,35 +31,11 @@ const uploadFiles = async (files) => {
   return new Promise((resolve) => setTimeout(() => resolve(files), 1000))
 }
 
-const fileToBase64 = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => {
-      const base64String = reader.result.split(',')[1]
-      console.log('Base64 string:', base64String)
-      resolve(base64String)
-    }
-    reader.onerror = (error) => reject(error)
-  })
-}
-
-export const generateBreadcrumbs = (path) => {
-  const segments = path.split('/')
-  return segments.map((segment, index) => {
-    return {
-      name: segment,
-      path: segments.slice(0, index + 1).join('/'),
-    }
-  })
-}
-
 const Browse = () => {
   const queryClient = useQueryClient()
   const params = useParams()
   const { '*': path } = params
-
-  const breadcrumbs = generateBreadcrumbs(path)
+  const breadcrumbs = splitPath(path)
 
   const newFilesMutation = useMutation({
     mutationFn: uploadFiles,
