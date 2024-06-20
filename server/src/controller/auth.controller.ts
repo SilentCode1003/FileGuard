@@ -8,7 +8,7 @@ export const login: RequestHandler = async (req, res, next) => {
   const validatedBody = loginSchema.safeParse(req.body)
 
   if (!validatedBody.success) {
-    return res.status(400).json({ message: validatedBody.error.flatten() })
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
   }
 
   try {
@@ -63,7 +63,7 @@ export const getCurrentUser: RequestHandler = async (req, res) => {
         },
       })
     } else {
-      return res.status(401).json({
+      return res.status(200).json({
         data: {
           isLogged: true,
           user: {

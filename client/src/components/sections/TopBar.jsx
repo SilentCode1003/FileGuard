@@ -1,11 +1,25 @@
 import { FaSearch } from 'react-icons/fa'
 import { Menu, MenuButton, MenuItems, Transition } from '@headlessui/react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { FaRegUser } from 'react-icons/fa'
 
 import { SlLogout, SlSettings } from 'react-icons/sl'
+import { useLogout } from '../../api/auth/logout'
 
 const TopBar = () => {
+  const navigate = useNavigate()
+
+  const { mutateAsync: logout } = useLogout()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      navigate('/login')
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <nav className="relative bg-white w-full h-[5rem] hidden md:block">
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
@@ -62,7 +76,9 @@ const TopBar = () => {
                         <div className="basis-2/12">
                           <SlLogout className="size-4 text-black" />
                         </div>
-                        <div className="basis-10/12">Logout</div>
+                        <div className="basis-10/12" onClick={handleLogout}>
+                          Logout
+                        </div>
                       </NavLink>
                     </MenuItems>
                   </Transition>
