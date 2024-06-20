@@ -10,4 +10,4 @@ usersRouter.post('/', createUser)
 
 usersRouter.put('/:userId', updateUser)
 
-usersRouter.put('/toggle/:userId', toggleUser)
+usersRouter.put('/:userId/toggle', toggleUser)

@@ -15,6 +15,8 @@ tags:
   - users
   - user-roles
   - permissions
+  - departments
+  - user-logs
 
 paths:
   /auth/me:
@@ -120,18 +122,315 @@ paths:
       tags:
         - files
       summary: Get all files
+      parameters:
+        - in: query
+          name: searchText
+          schema:
+            type: string
+          description: The text to search
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Files'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - files
+      summary: Create a file
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      file:
+                        type: string
+                      fileName:
+                        type: string
+                      fileMimeType:
+                        type: string
+                      filePath:
+                        type: string
+        responses:
+          '200':
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Files'
+          '400':
+            description: Invalid data
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+          '401':
+            description: Invalid credentials
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
 
   /folders:
     get:
       tags:
         - folders
-      summary: Get all folders
+      summary: Get all folders based on query params
+      parameters:
+        - in: query
+          name: folderPath
+          schema:
+            type: string
+          required: true
+          description: The path of the folder to get
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Folders'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - folders
+      summary: Create a new folder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                folderName:
+                  type: string
+                folderPath:
+                  type: string
+                folderDepth:
+                  type: number
+                  format: integer
+                  example: 1
+              required:
+                - folderName
+                - folderPath
+                - folderUserId
+                - folderDepth
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Folders'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /users:
     get:
       tags:
         - users
       summary: Get all users
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Users'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - users
+      summary: Create a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userFullname:
+                  type: string
+                userUsername:
+                  type: string
+                userPassword:
+                  type: string
+                userRoleId:
+                  type: string
+                  format: nanoid
+                  example: aofJcp3aUpuQ1m4QXbZHN
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Users'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - users
+      summary: Update a user
+      parameters:
+        - name: userId
+          in: path
+          description: The id of the user to update
+          required: true
+          schema:
+            type: string
+            format: nanoid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userFullname:
+                  type: string
+                userUsername:
+                  type: string
+                userPassword:
+                  type: string
+                userRoleId:
+                  type: string
+                  format: nanoid
+                  example: aofJcp3aUpuQ1m4QXbZHN
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Users'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/{userId}/toggle:
+    put:
+      tags:
+        - users
+      summary: Toggle user isActive state
+      parameters:
+        - name: userId
+          in: path
+          description: The id of the user to toggle
+          required: true
+          schema:
+            type: string
+            format: nanoid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Users'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /user-roles:
     get:
@@ -313,6 +612,260 @@ paths:
       tags:
         - permissions
       summary: Get all permissions
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Permissions'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - permissions
+      summary: Create a permission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                permUrId:
+                  type: string
+                permFolderId:
+                  type: string
+              required:
+                - permUrId
+                - permFolderId
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Permissions'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /permissions/{id}:
+    get:
+      tags:
+        - permissions
+      summary: Get a permission
+      parameters:
+        - name: id
+          in: path
+          description: Permission ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Permissions'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Permission not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - permissions
+      summary: Update a permission
+      parameters:
+        - name: id
+          in: path
+          description: Permission ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                permUrId:
+                  type: string
+                permFolderId:
+                  type: string
+              required:
+                - permUrId
+                - permFolderId
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Permissions'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Permission not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /permissions/{id}/toggle:
+    put:
+      tags:
+        - permissions
+      summary: Toggle permission isActive state
+      parameters:
+        - name: id
+          in: path
+          description: Permission ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Permissions'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Permission not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /departments:
+    get:
+      tags:
+        - departments
+      summary: Get all departments
+
+  /user-logs:
+    get:
+      tags:
+        - user-logs
+      summary: Get all logs
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserLogs'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - user-logs
+      summary: Create a user log
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ulDescription:
+                  type: string
+              required:
+                - ulDescription
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserLogs'
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   schemas:
@@ -335,6 +888,58 @@ components:
           example: aofJcp3aUpuQ1m4QXbZHN
         userIsActive:
           type: boolean
+    Files:
+      type: object
+      properties:
+        fileId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        fileUserId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        user:
+          $ref: '#/components/schemas/User'
+        fileName:
+          type: string
+          example: test.txt
+        filePath:
+          type: string
+          example: test.txt
+        createdAt:
+          type: string
+          format: date-time
+          example: '2022-01-01T00:00:00.000Z'
+    Folders:
+      type: object
+      properties:
+        folderId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        folderName:
+          type: string
+          example: test
+        folderPath:
+          type: string
+          example: test
+        folderParentId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        folderUserId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        folderDepth:
+          type: number
+          format: integer
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: '2022-01-01T00:00:00.000Z'
     Health:
       type: object
       properties:
@@ -346,6 +951,27 @@ components:
         date:
           type: string
           format: date-time
+    Users:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        userFullname:
+          type: string
+          example: John Doe
+        userUsername:
+          type: string
+          example: John Doe
+        userRoleId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        role:
+          $ref: '#/components/schemas/UserRole'
+        userIsActive:
+          type: boolean
     UserRole:
       type: object
       properties:
@@ -358,6 +984,43 @@ components:
           example: admin
         urIsActive:
           type: boolean
+    Permissions:
+      type: object
+      properties:
+        permId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        permUrId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        permFolderId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        permIsActive:
+          type: boolean
+    UserLogs:
+      type: object
+      properties:
+        ulId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        ulUserId:
+          type: string
+          format: nanoid
+          example: aofJcp3aUpuQ1m4QXbZHN
+        user:
+          $ref: '#/components/schemas/User'
+        ulDescription:
+          type: string
+          example: test
+        createdAt:
+          type: string
+          format: date-time
+          example: '2022-01-01T00:00:00.000Z'
     ErrorResponse:
       type: object
       properties:
