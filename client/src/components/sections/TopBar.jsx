@@ -5,8 +5,12 @@ import { FaRegUser } from 'react-icons/fa'
 
 import { SlLogout, SlSettings } from 'react-icons/sl'
 import { useLogout } from '../../api/auth/logout'
+import { useUser } from '../../hooks/useUser'
 
 const TopBar = () => {
+  const { data: user } = useUser()
+  const fullName = user.data.user.userFullname
+
   const navigate = useNavigate()
 
   const { mutateAsync: logout } = useLogout()
@@ -40,10 +44,10 @@ const TopBar = () => {
             </div>
 
             <div className="md:ml-auto">
-              <div className="flex space-x-2">
+              <div className="flex space-x-4">
                 <Menu>
                   <div className="my-auto text-lg">
-                    <p>No Username Found</p>
+                    <p>Welcome! {fullName}</p>
                   </div>
                   <MenuButton className="inline-flex whitespace-nowrap items-center rounded-full p-2 text-lg hover:bg-gray-300">
                     <FaRegUser size={25} />
@@ -72,13 +76,12 @@ const TopBar = () => {
                       <NavLink
                         to="#"
                         className="group flex w-full items-center gap-2 rounded py-1.5 px-3 hover:bg-slate-200/85"
+                        onClick={handleLogout}
                       >
                         <div className="basis-2/12">
                           <SlLogout className="size-4 text-black" />
                         </div>
-                        <div className="basis-10/12" onClick={handleLogout}>
-                          Logout
-                        </div>
+                        <div className="basis-10/12">Logout</div>
                       </NavLink>
                     </MenuItems>
                   </Transition>
