@@ -5,7 +5,7 @@ function ProtectedRoute({ children }) {
   const { data: user, isLoading, isError } = useUser()
 
   if (isLoading) {
-    return <div>Auth loading</div> // TODO: Add loading compoenent
+    return <div>Auth loading</div>
   }
 
   if (!user?.data.isLogged || isError) {

@@ -2,18 +2,15 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useMediaQuery } from 'react-responsive'
-
-import SideBarSubMenu from './SideBarSubMenu'
-
+import { useGetPath } from '../../../hooks/useGetPath'
 import { IoIosArrowBack, IoMdMenu } from 'react-icons/io'
 import { AiOutlineAppstore } from 'react-icons/ai'
-
-import Logo from '../../../assets/img/file-guard-logo.png'
+import Logo from '/img/file-guard-logo.png'
+import SideBarSubMenu from './SideBarSubMenu'
+import Spinner from '../../utility/Spinner'
 
 const SideBar = () => {
   let isTab = useMediaQuery({ maxWidth: 768 })
-  const { pathname } = useLocation()
-
   const [isOpen, setIsOpen] = useState(isTab ? false : true)
 
   const sidebarAnimation = isTab
@@ -60,51 +57,24 @@ const SideBar = () => {
     }
   }, [isTab])
 
-  const company = [
-    {
-      name: '5L Solutions',
-      menus: [
-        {
-          name: 'Archives',
-          menus: [
-            {
-              name: 'HR',
-              menus: [
-                {
-                  name: 'Events',
-                  menus: [
-                    'Sports Fest',
-                    'Anniversary',
-                    {
-                      name: 'Christmas Party',
-                      menus: ['2021', '2022', '2023'],
-                    },
-                  ],
-                },
-                'Documents',
-              ],
-            },
-            {
-              name: 'Engineer',
-              menus: ['AutoCAD', 'Blue Prints'],
-            },
-            {
-              name: 'Legal',
-              menus: ['Documents', 'Notarized'],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'Cyber Power',
-      menus: ['2023 Archives', '2024 Archives'],
-    },
-    {
-      name: 'Fridays Boracay',
-      menus: ['2023 Archives', '2024 Archives'],
-    },
-  ]
+  const { isLoading, data, error } = useGetPath('folders', '/')
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center w-[16rem]">
+        <Spinner size={50} />
+      </div>
+    )
+  }
+
+  if (error) {
+    return <h1>Error: {error}</h1>
+  }
+
+  const rootPath = data.map((folder) => ({
+    name: folder.folderName.replace(/([a-z])([A-Z])/g, '$1 $2'),
+    id: folder.folderId,
+  }))
 
   return (
     <>
@@ -136,11 +106,15 @@ const SideBar = () => {
             {/* With Submenu */}
             {(isOpen || isTab) && (
               <div className="border-y py-4 border-slate-300">
-                {company.map((menu) => (
-                  <div key={menu.name}>
-                    <SideBarSubMenu data={menu} />
-                  </div>
-                ))}
+                {rootPath.length === 0 ? (
+                  <p className="flex justify-center">No data</p>
+                ) : (
+                  rootPath.map((folder) => (
+                    <div key={folder.name}>
+                      <SideBarSubMenu data={folder} />
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </ul>

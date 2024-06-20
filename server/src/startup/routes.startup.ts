@@ -13,12 +13,12 @@ import { permissionsRouter } from '../routes/permissions.route'
 import { userRolesRouter } from '../routes/roles.route'
 import { usersRouter } from '../routes/users.route'
 import { companyRouter } from '../routes/companies.route'
-import { CompanyDepartmentRouter } from '../routes/companyDepartment.route'
+import { companyDepartmentRouter } from '../routes/companyDepartment.route'
 
 export const initRoutes = (app: Express) => {
   app.post('/upload', serviceAuth, uploadFile)
   app.use('/auth', authRouter)
-  //app.use(auth)
+  app.use(auth)
   app.use('/health', healthRouter)
   app.use('/files', filesRouter)
   app.use('/folders', foldersRouter)
@@ -29,5 +29,5 @@ export const initRoutes = (app: Express) => {
   app.use('/departments', departmentsRouter)
   app.use('/user-logs', userLogsRouter)
   app.use('/companies', companyRouter)
-  app.use('/companyDepartments', CompanyDepartmentRouter)
+  app.use('/company-departments', companyDepartmentRouter)
 }
