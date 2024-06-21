@@ -262,20 +262,26 @@ export const createFile: RequestHandler = async (req, res) => {
 }
 
 export const createRevisions: RequestHandler = async (req, res) => {
-  const validatedBody = await createRevisionsSchema.safeParseAsync({
+  const validatedBody = createRevisionsSchema.safeParse(req.body)
+
+  if (!validatedBody.success) {
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
+  }
+
+  const validatedData = await createRevisionsSchema.safeParseAsync({
     files: req.body.files.map((file: any) => ({
       ...file,
       revFileUserId: req.context.user!.userId,
     })),
   })
 
-  if (!validatedBody.success) {
-    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
+  if (!validatedData.success) {
+    return res.status(400).json({ message: validatedData.error.errors[0]?.message })
   }
 
   try {
     let newRevisions: Array<Omit<Revisions, 'revFileBase'>> = []
-    for (const fileData of validatedBody.data.files) {
+    for (const fileData of validatedData.data.files) {
       const file = Buffer.from(fileData.revFile, 'base64')
 
       await prisma.$transaction(async (prisma) => {
