@@ -171,6 +171,8 @@ paths:
                         type: string
                       filePath:
                         type: string
+                      fileMimeType:
+                        type: string
       responses:
         '200':
           description: Successful operation
@@ -266,20 +268,25 @@ paths:
         content:
           application/json:
             schema:
-              type: array
-              items:
-                type: object
-                properties:
-                  revFile:
-                    type: string
-                    format: base64
-                  revFileName:
-                    type: string
-                  revFilePath:
-                    type: string
-                  revFileId:
-                    type: string
-                    format: nanoid
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      revFile:
+                        type: string
+                        format: base64
+                      revFileName:
+                        type: string
+                      revFilePath:
+                        type: string
+                      revFileId:
+                        type: string
+                        format: nanoid
+                      revFileMimeType:
+                        type: string
       responses:
         '200':
           description: Successful operation
