@@ -212,6 +212,7 @@ import { useFilePreview } from '../../hooks/filePreview';
 import Modal from '../utility/Modal';
 import Spinner from '../utility/Spinner';
 import sanitizeFilePath from '../browse/file/SanitizeFilePath ';
+import { CONFIG } from '../../config/env';
 
 
 const TopBar = () => {
@@ -376,7 +377,7 @@ const TopBar = () => {
                   <Spinner size={30} />
                 ) : (
                   <embed
-                    src={`http://localhost:3000/files/preview/${sanitizeFilePath(selectedSuggestion.filePath)}/${selectedSuggestion.fileName}`}
+                    src={`${CONFIG.SERVER_URL}/files/preview/${sanitizeFilePath(selectedSuggestion.filePath)}/${selectedSuggestion.fileName}`}
                     type="application/pdf"
                     className="w-full h-full"
                   />
@@ -388,7 +389,7 @@ const TopBar = () => {
                   <Spinner size={30} />
                 ) : (
                   <embed
-                    src={`http://localhost:3000/files/preview/${sanitizeFilePath(selectedSuggestion.filePath)}/${selectedSuggestion.fileName}`}
+                    src={`${CONFIG.SERVER_URL}/files/preview/${sanitizeFilePath(selectedSuggestion.filePath)}/${selectedSuggestion.fileName}`}
                     type="application/pdf"
                     className="w-full h-full"
                   />
