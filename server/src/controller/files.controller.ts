@@ -9,6 +9,7 @@ import {
   createRevisionsSchema,
   getFilesByPathSchema,
   getRevisionsByFileIdSchema,
+  previewFileSchema,
   searchFilesSchema,
 } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
