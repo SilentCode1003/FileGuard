@@ -1,17 +1,19 @@
 import { z } from 'zod'
 
 export const createFileSchema = z.object({
-  files: z.array(
-    z.object({
-      file: z
-        .string({ required_error: 'file is required' })
-        .refine((value) => isValidBase64(value), 'file is not a valid base64 string'),
-      fileName: z.string({ required_error: 'fileName is required' }),
-      filePath: z.string({ required_error: 'filePath is required' }),
-      fileMimeType: z.string({ required_error: 'fileMimeType is required' }),
-    }),
-    { required_error: 'files is required' },
-  ),
+  files: z
+    .array(
+      z.object({
+        file: z
+          .string({ required_error: 'file is required' })
+          .refine((value) => isValidBase64(value), 'file is not a valid base64 string'),
+        fileName: z.string({ required_error: 'fileName is required' }),
+        filePath: z.string({ required_error: 'filePath is required' }),
+        fileMimeType: z.string({ required_error: 'fileMimeType is required' }),
+      }),
+      { required_error: 'files is required' },
+    )
+    .nonempty(),
 })
 
 const isValidBase64 = (b: string) => {
@@ -35,15 +37,18 @@ export const getRevisionsByFileIdSchema = z.object({
 })
 
 export const createRevisionsSchema = z.object({
-  files: z.array(
-    z.object({
-      revFile: z.string({ required_error: 'revFile is required' }).base64(),
-      revFileName: z.string({ required_error: 'revFileName is required' }),
-      revFilePath: z.string({ required_error: 'revFilePath is required' }),
-      revFileId: z.string({ required_error: 'revFileId is required' }).nanoid(),
-      revFileMimeType: z.string({ required_error: 'revFileMimeType is required' }),
-    }),
-  ),
+  files: z
+    .array(
+      z.object({
+        revFile: z.string({ required_error: 'revFile is required' }).base64(),
+        revFileName: z.string({ required_error: 'revFileName is required' }),
+        revFilePath: z.string({ required_error: 'revFilePath is required' }),
+        revFileId: z.string({ required_error: 'revFileId is required' }).nanoid(),
+        revFileMimeType: z.string({ required_error: 'revFileMimeType is required' }),
+      }),
+      { required_error: 'files is required' },
+    )
+    .nonempty(),
 })
 
 export const previewFileSchema = z.object({
