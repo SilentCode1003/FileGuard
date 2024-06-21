@@ -397,6 +397,9 @@ paths:
                   type: number
                   format: integer
                   example: 1
+                folderParentId:
+                  type: string
+                  format: nanoid
               required:
                 - folderName
                 - folderPath
