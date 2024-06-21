@@ -60,21 +60,21 @@ export const createFolder: RequestHandler = async (req, res) => {
         },
       })
 
-      if (!checkFolder) {
-        const folder = await prisma.folders.create({
-          data: {
-            ...validatedBody.data,
-            folderPath:
-              validatedBody.data.folderPath === '/'
-                ? 'root'
-                : `root${validatedBody.data.folderPath}`,
-            folderId: newFolderId,
-            folderUserId: req.context.user!.userId,
-            folderParentId: validatedBody.data.folderParentId ?? null,
-          },
-        })
-        return res.status(200).json({ data: folder })
-      } else throw new Error('Folder already exists')
+      if (checkFolder) {
+        throw new Error('Folder already exists')
+      }
+
+      const folder = await prisma.folders.create({
+        data: {
+          ...validatedBody.data,
+          folderPath:
+            validatedBody.data.folderPath === '/' ? 'root' : `root${validatedBody.data.folderPath}`,
+          folderId: newFolderId,
+          folderUserId: req.context.user!.userId,
+          folderParentId: validatedBody.data.folderParentId ?? null,
+        },
+      })
+      return res.status(200).json({ data: folder })
     })
   } catch (error) {
     if (error instanceof Error) {
