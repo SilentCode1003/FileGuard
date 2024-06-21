@@ -10,6 +10,7 @@ export const createFileSchema = z.object({
       filePath: z.string({ required_error: 'filePath is required' }),
       fileMimeType: z.string({ required_error: 'fileMimeType is required' }),
     }),
+    { required_error: 'files is required' },
   ),
 })
 
