@@ -1,16 +1,11 @@
-import React from 'react'
 import { FaArrowLeft } from 'react-icons/fa'
-import { FiDownload } from 'react-icons/fi'
-import { MdOutlineDriveFileRenameOutline, MdDeleteOutline } from 'react-icons/md'
 import { motion, AnimatePresence } from 'framer-motion'
-
-const Modal = ({ isOpen, onClose, children }) => {
+const Modal = ({ isOpen, onClose, style, children }) => {
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose()
     }
   }
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -21,19 +16,8 @@ const Modal = ({ isOpen, onClose, children }) => {
           exit={{ opacity: 0 }}
           onClick={handleOverlayClick}
         >
-          <div className="absolute top-4 right-6 flex space-x-2">
-            <button className="text-xl rounded-full hover:bg-slate-200 p-2 text-white hover:text-gray-800">
-              <FiDownload size={26} />
-            </button>
-            <button className="text-xl rounded-full hover:bg-slate-200 p-2 text-white hover:text-gray-800">
-              <MdOutlineDriveFileRenameOutline size={26} />
-            </button>
-            <button className="text-xl rounded-full hover:bg-slate-200 p-2 text-white hover:text-gray-800">
-              <MdDeleteOutline size={26} />
-            </button>
-          </div>
           <motion.div
-            className="bg-white rounded-lg w-10/12 h-5/6 p-4"
+            className={`${style} bg-white`}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
