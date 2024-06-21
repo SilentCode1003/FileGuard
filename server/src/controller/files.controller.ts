@@ -9,13 +9,13 @@ import {
   createRevisionsSchema,
   getFilesByPathSchema,
   getRevisionsByFileIdSchema,
-  previewFileSchema,
   searchFilesSchema,
 } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
 import { nanoid } from '../util/nano.util'
 import PdfParse from 'pdf-parse'
 import mammoth from 'mammoth'
+import * as xlsx from 'xlsx'
 
 export const getFilesByPath: RequestHandler = async (req, res) => {
   const validatedBody = getFilesByPathSchema.safeParse(req.query)
@@ -182,8 +182,8 @@ export const createFile: RequestHandler = async (req, res) => {
 
           await asyncWriteFile(filePath, file)
 
+          let databuffer = readFileSync(filePath)
           if (fileData.fileMimeType == 'application/pdf') {
-            let databuffer = readFileSync(filePath)
             const content = (await PdfParse(databuffer)).text.replaceAll(/\s+/g, '')
 
             const newFileContentId = nanoid()
@@ -198,9 +198,9 @@ export const createFile: RequestHandler = async (req, res) => {
           }
 
           if (
-            fileData.fileMimeType ==
+            fileData.fileMimeType ===
               'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-            fileData.fileMimeType == 'application/msword'
+            fileData.fileMimeType === 'application/msword'
           ) {
             const data = await mammoth.extractRawText({
               path: filePath,
@@ -217,6 +217,34 @@ export const createFile: RequestHandler = async (req, res) => {
             })
 
             console.log(`this file is a word file: ${fileData.fileName}`)
+          }
+
+          if (
+            fileData.fileMimeType ==
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+            fileData.fileMimeType == 'application/vnd.ms-excel' ||
+            fileData.fileMimeType == 'application/vnd.oasis.opendocument.spreadsheet'
+          ) {
+            const data = xlsx.read(databuffer, { type: 'buffer' })
+
+            const content: Array<string> = []
+            for (let i = 0; i < data.SheetNames.length; i++) {
+              const sheet = data.Sheets[data.SheetNames[i]!]
+              const text = xlsx.utils.sheet_to_txt(sheet!)
+
+              content.push(text.replace(/\s+/g, ''))
+            }
+
+            const newFileContentId = nanoid()
+            await prisma.fileContents.create({
+              data: {
+                fcId: newFileContentId,
+                fcFileId: newFileId,
+                fcContent: content.join('\n'),
+              },
+            })
+
+            console.log(`this file is an excel file: ${fileData.fileName}`)
           }
 
           newFiles.push(newFile)
@@ -333,7 +361,11 @@ export const createRevisions: RequestHandler = async (req, res) => {
 
 export const uploadFile: RequestHandler = async (req, res) => {
   try {
-    const { filename, filecontent } = req.body as { filename: string; filecontent: string }
+    const { filename, filecontent, mimeType } = req.body as {
+      filename: string
+      filecontent: string
+      mimeType: string
+    }
     const targetFolder = `${CONFIG.IS_FILE_SERVER == true ? CONFIG.FILE_SERVER : 'root'}`
     const userId = req.context.user.userId
     let folders = filename.split('_')
@@ -430,7 +462,7 @@ export const uploadFile: RequestHandler = async (req, res) => {
         })
 
         //write file to disk
-        decodeBase64ToFile(filecontent, `${documentTypeFolder}/${revFileName}`)
+        await decodeBase64ToFile(filecontent, `${documentTypeFolder}/${revFileName}`)
 
         return res.status(200).send({ message: 'Revision passed' })
       })
@@ -443,7 +475,7 @@ export const uploadFile: RequestHandler = async (req, res) => {
         await createFolder(departmentFolder, 2, userId)
         await createFolder(documentTypeFolder, 3, userId)
 
-        decodeBase64ToFile(filecontent, `${documentTypeFolder}/${filename}`)
+        await decodeBase64ToFile(filecontent, `${documentTypeFolder}/${filename}`)
 
         await prisma.$transaction(async (prisma) => {
           const newFileId = nanoid()
@@ -499,6 +531,71 @@ export const uploadFile: RequestHandler = async (req, res) => {
               ffFileId: newFileId,
             },
           })
+
+          let databuffer = readFileSync(`${documentTypeFolder}/${filename}`)
+
+          if (mimeType === 'application/pdf') {
+            const content = (await PdfParse(databuffer)).text.replaceAll(/\s+/g, '')
+
+            const newFileContentId = nanoid()
+            await prisma.fileContents.create({
+              data: {
+                fcId: newFileContentId,
+                fcFileId: newFileId,
+                fcContent: content,
+              },
+            })
+            console.log(`this file is a pdf file: ${filename}`)
+          }
+
+          if (
+            mimeType ===
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+            mimeType === 'application/msword'
+          ) {
+            const data = await mammoth.extractRawText({
+              path: `${documentTypeFolder}/${filename}`,
+            })
+            const content = data.value.replaceAll(/\s+/g, '')
+
+            const newFileContentId = nanoid()
+            await prisma.fileContents.create({
+              data: {
+                fcId: newFileContentId,
+                fcFileId: newFileId,
+                fcContent: content,
+              },
+            })
+
+            console.log(`this file is a word file: ${filename}`)
+          }
+
+          if (
+            mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+            mimeType === 'application/vnd.ms-excel' ||
+            mimeType === 'application/vnd.oasis.opendocument.spreadsheet'
+          ) {
+            const data = xlsx.read(databuffer, { type: 'buffer' })
+
+            const content: Array<string> = []
+            for (let i = 0; i < data.SheetNames.length; i++) {
+              const sheet = data.Sheets[data.SheetNames[i]!]
+              const text = xlsx.utils.sheet_to_txt(sheet!)
+
+              content.push(text.replace(/\s+/g, ''))
+            }
+
+            const newFileContentId = nanoid()
+            await prisma.fileContents.create({
+              data: {
+                fcId: newFileContentId,
+                fcFileId: newFileId,
+                fcContent: content.join('\n'),
+              },
+            })
+
+            console.log(`this file is an excel file: ${filename}`)
+          }
         })
         return res.status(200).send({ message: 'Upload Success' })
       } else {
