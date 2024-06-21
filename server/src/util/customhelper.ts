@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { prisma } from '../db/prisma'
 import { nanoid } from './nano.util'
+import { writeFile } from 'fs/promises'
 
 export const getFolderPath = (folderPath: string) => {
   const initPath = folderPath.split('/')
@@ -12,7 +13,7 @@ export const getFolderPath = (folderPath: string) => {
   return finalPath
 }
 export const createFolder = async (dir: any, folderDepth: number, folderUserId: string) => {
-  const folderName = /\w+$/gi.exec(dir)!
+  const folderName = /\w+[\s]\w+$/gi.exec(dir)! // regex to get last /folder as folderName
   const newFolderId = nanoid()
   await prisma.$transaction(async (prisma) => {
     const folderPath = getFolderPath(dir)
@@ -35,7 +36,7 @@ export const createFolder = async (dir: any, folderDepth: number, folderUserId: 
     }
 
     if (folderDepth > 0) {
-      const parentfolderName = /\w+$/gi.exec(folderPath)!
+      const parentfolderName = /\w+[\s]\w+$/gi.exec(folderPath)! // regex to get last /folder as folderName
       const parentFolder = await prisma.folders.findFirst({
         where: {
           AND: [
@@ -85,16 +86,16 @@ export const createFolder = async (dir: any, folderDepth: number, folderUserId: 
   })
 }
 
-export const decodeBase64ToFile = (base64String: string, filePath: string) => {
+export const decodeBase64ToFile = async (base64String: string, filePath: string) => {
   // Decode the Base64 string
   const pdfBuffer = Buffer.from(base64String, 'base64')
 
   // Write the binary data to a file
-  fs.writeFile(filePath, pdfBuffer, (err) => {
-    if (err) {
-      console.error('Error writing file:', err)
-    } else {
-      console.log('File saved successfully:', filePath)
-    }
-  })
+  try {
+    await writeFile(filePath, pdfBuffer)
+    console.log('File saved successfully')
+  } catch (error) {
+    console.log('Error saving file:', error)
+    throw new Error('Error saving file')
+  }
 }
