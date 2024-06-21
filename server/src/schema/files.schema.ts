@@ -37,7 +37,9 @@ export const getRevisionsByFileIdSchema = z.object({
 export const createRevisionsSchema = z.object({
   files: z.array(
     z.object({
-      revFile: z.string({ required_error: 'revFile is required' }).base64(),
+      revFile: z
+        .string({ required_error: 'file is required' })
+        .refine((value) => isValidBase64(value), 'file is not a valid base64 string'),
       revFileName: z.string({ required_error: 'revFileName is required' }),
       revFilePath: z.string({ required_error: 'revFilePath is required' }),
       revFileId: z.string({ required_error: 'revFileId is required' }).nanoid(),
