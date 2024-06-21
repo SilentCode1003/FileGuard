@@ -19,3 +19,38 @@ export function splitPath(path) {
     }
   })
 }
+
+export function mergeData(files, folders) {
+  if (!files || !folders) {
+    return []
+  }
+
+  const refinedFiles = files.map((file) => ({
+    name: file.fileName,
+    id: file.fileId,
+    path: file.filePath,
+    type: 'file',
+    extension: file.fileName.split('.').pop(),
+  }))
+
+  const refinedFolders = folders.map((folder) => ({
+    name: folder.folderName,
+    id: folder.folderId,
+    path: folder.folderPath,
+    type: 'folder',
+  }))
+
+  const mergeFiles = [...refinedFiles, ...refinedFolders]
+
+  mergeFiles.sort((a, b) => {
+    if (a.type === 'folder' && b.type === 'file') {
+      return -1
+    } else if (a.type === 'file' && b.type === 'folder') {
+      return 1
+    } else {
+      return a.name.localeCompare(b.name)
+    }
+  })
+
+  return mergeFiles
+}
