@@ -9,7 +9,8 @@
     "dev": "tsup src/index.ts --watch --format esm --onSuccess  \"node dist/index.js\"",
     "format": "prettier --write \"src/**/*.ts\"",
     "db:migrate": "prisma migrate dev && prisma db seed",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -19,6 +20,7 @@
     "@types/morgan": "^1.9.9",
     "@types/node": "^20.14.2",
     "@types/swagger-ui-express": "^4.1.6",
+    "patch-package": "^8.0.0",
     "prettier": "^3.3.2",
     "prisma": "^5.15.0",
     "tsup": "^8.1.0",
