@@ -7,7 +7,7 @@ import { existsSync } from 'fs'
 
 export const getFolders: RequestHandler = async (req, res) => {
   const validatedBody = getFoldersSchema.safeParse(req.query)
-
+  
   if (!validatedBody.success) {
     return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
   }
@@ -28,6 +28,7 @@ export const getFolders: RequestHandler = async (req, res) => {
 }
 
 export const createFolder: RequestHandler = async (req, res) => {
+  console.log(req.body)
   const validatedBody = createFolderSchema.safeParse({
     ...req.body,
     folderUserId: req.context.user!.userId,

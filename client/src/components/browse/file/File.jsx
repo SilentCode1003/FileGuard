@@ -9,7 +9,7 @@ import {
 import Dropdown from '../../utility/dropdown/Dropdown'
 import DropdownItem from '../../utility/dropdown/DropdownItem'
 import FileIcon from '../../utility/FileIcon'
-import Modal from '../../utility/Modal'
+import FileView from './FileView'
 import Spinner from '../../utility/Spinner'
 
 const File = ({ file }) => {
@@ -40,7 +40,7 @@ const File = ({ file }) => {
           <DropdownItem Icon={MdDeleteOutline}>Delete</DropdownItem>
         </Dropdown>
       </div>
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+      <FileView isOpen={isModalOpen} onClose={handleCloseModal}>
         <div className="flex flex-col justify-between">
           <h2 className="mx-auto text-xl font-bold mb-4">{file.name}</h2>
           <div className="flex flex-col lg:flex-row gap-4 h-[42rem]">
@@ -54,7 +54,7 @@ const File = ({ file }) => {
             </div>
           </div>
         </div>
-      </Modal>
+      </FileView>
     </div>
   )
 }

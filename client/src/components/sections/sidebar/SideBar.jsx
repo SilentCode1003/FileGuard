@@ -2,16 +2,34 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useMediaQuery } from 'react-responsive'
-import { useGetPath } from '../../../hooks/useGetPath'
+
+//Icons & Logo
 import { IoIosArrowBack, IoMdMenu } from 'react-icons/io'
 import { AiOutlineAppstore } from 'react-icons/ai'
+import { IoMdAdd } from 'react-icons/io'
 import Logo from '/img/file-guard-logo.png'
+
+//Hooks
+import { useGetPath } from '../../../hooks/useGetPath'
+
+//components
 import SideBarSubMenu from './SideBarSubMenu'
 import Spinner from '../../utility/Spinner'
+import Modal from '../../utility/Modal'
+import CreateCompanyFolder from '../../utility/Create/Folder/CreateCompanyFolder'
 
 const SideBar = () => {
   let isTab = useMediaQuery({ maxWidth: 768 })
   const [isOpen, setIsOpen] = useState(isTab ? false : true)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const handleCreateFolder = (e) => {
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+  }
 
   const sidebarAnimation = isTab
     ? {
@@ -58,7 +76,7 @@ const SideBar = () => {
   }, [isTab])
 
   const { isLoading, data, error } = useGetPath('folders', '/')
-  console.log()
+
   if (isLoading) {
     return (
       <div className="flex justify-center w-[16rem]">
@@ -70,10 +88,11 @@ const SideBar = () => {
   if (error) {
     return <h1>Error:</h1>
   }
-
+  // console.log(data)
   const rootPath = data.map((folder) => ({
     name: folder.folderName.replace(/([a-z])([A-Z])/g, '$1 $2'),
     id: folder.folderId,
+    depth: folder.folderDepth,
   }))
 
   return (
@@ -106,8 +125,17 @@ const SideBar = () => {
             {/* With Submenu */}
             {(isOpen || isTab) && (
               <div className="border-y py-4 border-slate-300">
+                <li
+                  onClick={handleCreateFolder}
+                  className="border rounded-md shadow hover:bg-blue-100"
+                >
+                  <NavLink to="#" className="link">
+                    <IoMdAdd size={23} className="min-w-max" />
+                    Create Folder
+                  </NavLink>
+                </li>
                 {rootPath.length === 0 ? (
-                  <p className="flex justify-center">No data</p>
+                  <p className="flex justify-center p-10">No Folders Available</p>
                 ) : (
                   rootPath.map((folder) => (
                     <div key={folder.name}>
@@ -144,6 +172,9 @@ const SideBar = () => {
       <div className="m-3 md:hidden" onClick={() => setIsOpen(true)}>
         <IoMdMenu size={25} className="mt-4" />
       </div>
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} style={'rounded-lg p-4'}>
+        <CreateCompanyFolder closeModal={handleCloseModal} />
+      </Modal>
     </>
   )
 }
