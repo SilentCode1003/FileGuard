@@ -14,6 +14,7 @@ import {
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
 import { nanoid } from '../util/nano.util'
 import PdfParse from 'pdf-parse'
+import mammoth from 'mammoth'
 
 export const getFilesByPath: RequestHandler = async (req, res) => {
   const validatedBody = getFilesByPathSchema.safeParse(req.query)
@@ -149,7 +150,7 @@ export const createFile: RequestHandler = async (req, res) => {
             },
           })
 
-          const folderName = /\w+/gi.exec(fileData.filePath)!
+          const folderName = /\w+$/gi.exec(fileData.filePath)!
           const folderPath = `root${getFolderPath(fileData.filePath)}`
 
           const folder = await prisma.folders.findFirst({
@@ -174,17 +175,42 @@ export const createFile: RequestHandler = async (req, res) => {
 
           await asyncWriteFile(filePath, file)
 
-          let databuffer = readFileSync(filePath)
-          const content = (await PdfParse(databuffer)).text.replaceAll(/\s+/g, '')
+          if (fileData.fileMimeType == 'application/pdf') {
+            let databuffer = readFileSync(filePath)
+            const content = (await PdfParse(databuffer)).text.replaceAll(/\s+/g, '')
 
-          const newFileContentId = nanoid()
-          await prisma.fileContents.create({
-            data: {
-              fcId: newFileContentId,
-              fcFileId: newFileId,
-              fcContent: content,
-            },
-          })
+            const newFileContentId = nanoid()
+            await prisma.fileContents.create({
+              data: {
+                fcId: newFileContentId,
+                fcFileId: newFileId,
+                fcContent: content,
+              },
+            })
+            console.log(`this file is a pdf file: ${fileData.fileName}`)
+          }
+
+          if (
+            fileData.fileMimeType ==
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+            fileData.fileMimeType == 'application/msword'
+          ) {
+            const data = await mammoth.extractRawText({
+              path: filePath,
+            })
+            const content = data.value.replaceAll(/\s+/g, '')
+
+            const newFileContentId = nanoid()
+            await prisma.fileContents.create({
+              data: {
+                fcId: newFileContentId,
+                fcFileId: newFileId,
+                fcContent: content,
+              },
+            })
+
+            console.log(`this file is a word file: ${fileData.fileName}`)
+          }
 
           newFiles.push(newFile)
         }
