@@ -1,6 +1,7 @@
 import type { Files, Revisions } from '@prisma/client'
 import type { RequestHandler } from 'express'
-import { writeFile } from 'fs'
+import { readFileSync, writeFile } from 'fs'
+import { writeFile as asyncWriteFile } from 'fs/promises'
 import { CONFIG } from '../config/env.config.js'
 import { prisma } from '../db/prisma'
 import {
@@ -8,10 +9,13 @@ import {
   createRevisionsSchema,
   getFilesByPathSchema,
   getRevisionsByFileIdSchema,
+  previewFileSchema,
   searchFilesSchema,
 } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
 import { nanoid } from '../util/nano.util'
+import PdfParse from 'pdf-parse'
+import mammoth from 'mammoth'
 
 export const getFilesByPath: RequestHandler = async (req, res) => {
   const validatedBody = getFilesByPathSchema.safeParse(req.query)
@@ -133,11 +137,6 @@ export const createFile: RequestHandler = async (req, res) => {
         if (checkFile) {
           throw new Error('File already exists!')
         } else {
-          writeFile(filePath, file, (err) => {
-            if (err) throw err
-            console.log('The file has been saved!')
-          })
-
           const newFileId = nanoid()
           const newFile = await prisma.files.create({
             data: {
@@ -152,7 +151,7 @@ export const createFile: RequestHandler = async (req, res) => {
             },
           })
 
-          const folderName = /\w+/gi.exec(fileData.filePath)!
+          const folderName = /\w+$/gi.exec(fileData.filePath)!
           const folderPath = `root${getFolderPath(fileData.filePath)}`
 
           const folder = await prisma.folders.findFirst({
@@ -174,6 +173,45 @@ export const createFile: RequestHandler = async (req, res) => {
               ffFileId: newFileId,
             },
           })
+
+          await asyncWriteFile(filePath, file)
+
+          if (fileData.fileMimeType == 'application/pdf') {
+            let databuffer = readFileSync(filePath)
+            const content = (await PdfParse(databuffer)).text.replaceAll(/\s+/g, '')
+
+            const newFileContentId = nanoid()
+            await prisma.fileContents.create({
+              data: {
+                fcId: newFileContentId,
+                fcFileId: newFileId,
+                fcContent: content,
+              },
+            })
+            console.log(`this file is a pdf file: ${fileData.fileName}`)
+          }
+
+          if (
+            fileData.fileMimeType ==
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+            fileData.fileMimeType == 'application/msword'
+          ) {
+            const data = await mammoth.extractRawText({
+              path: filePath,
+            })
+            const content = data.value.replaceAll(/\s+/g, '')
+
+            const newFileContentId = nanoid()
+            await prisma.fileContents.create({
+              data: {
+                fcId: newFileContentId,
+                fcFileId: newFileId,
+                fcContent: content,
+              },
+            })
+
+            console.log(`this file is a word file: ${fileData.fileName}`)
+          }
 
           newFiles.push(newFile)
         }
