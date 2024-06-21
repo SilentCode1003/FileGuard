@@ -5,7 +5,7 @@ import { logger } from '../util/logger.util'
 
 const allowedOrigins =
   CONFIG.NODE_ENV === 'production'
-    ? [CONFIG.CLIENT_ORIGIN]
+    ? CONFIG.CLIENT_ORIGIN.split(',')
     : ['http://localhost:3000', 'http://localhost:5173']
 
 const options: cors.CorsOptions = {
