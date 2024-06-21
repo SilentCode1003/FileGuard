@@ -1,82 +1,71 @@
-// import { useState, useEffect } from 'react'
-// import { FaSearch, FaRegUser } from 'react-icons/fa'
-// import { TbDeviceImacSearch } from 'react-icons/tb'
-// import { Menu, MenuButton, MenuItems, Transition } from '@headlessui/react'
-// import { NavLink, useNavigate } from 'react-router-dom'
-// import { SlLogout, SlSettings } from 'react-icons/sl'
-// import { useLogout } from '../../api/auth/logout'
-// import { useUser } from '../../hooks/useUser'
-// import { useFileSearch } from '../../hooks/fileSearch'
-// import Modal from '../utility/Modal'
-// import Spinner from '../utility/Spinner'
+// import { useState, useEffect } from 'react';
+// import { FaSearch, FaRegUser } from 'react-icons/fa';
+// import { TbDeviceImacSearch } from 'react-icons/tb';
+// import { Menu, MenuButton, MenuItems, Transition } from '@headlessui/react';
+// import { NavLink, useNavigate } from 'react-router-dom';
+// import { SlLogout, SlSettings } from 'react-icons/sl';
+// import { useLogout } from '../../api/auth/logout';
+// import { useUser } from '../../hooks/useUser';
+// import { useFileSearch } from '../../hooks/fileSearch';
+// import { useFilePreview } from '../../hooks/filePreview';
+// import Modal from '../utility/Modal';
+// import Spinner from '../utility/Spinner';
 
 // const TopBar = () => {
-//   const { data: user } = useUser()
-//   const fullName = user.data.user.userFullname
+//   const { data: user } = useUser();
+//   const fullName = user.data.user.userFullname;
 
-//   const navigate = useNavigate()
+//   const navigate = useNavigate();
 
-//   const { mutateAsync: logout } = useLogout()
+//   const { mutateAsync: logout } = useLogout();
 
 //   const handleLogout = async () => {
 //     try {
-//       await logout()
-//       navigate('/login')
+//       await logout();
+//       navigate('/login');
 //     } catch (error) {
-//       console.log(error)
+//       console.log(error);
 //     }
-//   }
+//   };
 
-//   const [inputValue, setInputValue] = useState('')
-//   const [suggestions, setSuggestions] = useState([])
-//   const [showDropdown, setShowDropdown] = useState(false)
-//   const [isModalOpen, setIsModalOpen] = useState(false)
-//   const [selectedSuggestion, setSelectedSuggestion] = useState(null)
+//   const [inputValue, setInputValue] = useState('');
+//   const [suggestions, setSuggestions] = useState([]);
+//   const [showDropdown, setShowDropdown] = useState(false);
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+//   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
 
-//   const { data: searchResults } = useFileSearch(inputValue)
-//   console.log(searchResults, 'data')
+//   const { data: searchResults } = useFileSearch(inputValue);
 
 //   useEffect(() => {
-//     if (searchResults && searchResults.data) {
-//       setSuggestions(searchResults.data)
-//       setShowDropdown(true)
+//     if (searchResults && searchResults.data && inputValue.trim() !== '') {
+//       setSuggestions(searchResults.data);
+//       setShowDropdown(true);
 //     } else {
-//       setShowDropdown(false)
+//       setShowDropdown(false);
 //     }
-//   }, [searchResults])
+//   }, [searchResults, inputValue]);
 
 //   const handleInputChange = (e) => {
 //     const value = e.target.value.trim();
 //     setInputValue(value);
-//     const isEmptyOrWhitespace = value === '';
-//     if (isEmptyOrWhitespace) {
-//       setShowDropdown(false);
-//       setSuggestions([]);
-//     } else {
-//       const filteredSuggestions = searchResults?.data.filter(
-//         (suggestion) =>
-//           suggestion.fileName.toLowerCase().includes(value.toLowerCase()) &&
-//           suggestion.fileName.length >= value.length
-//       );
-//       setSuggestions(filteredSuggestions);
-//       setShowDropdown(filteredSuggestions.length > 0);
-//     }
 //   };
-  
-  
-  
 
 //   const handleSuggestionClick = (suggestion) => {
-//     setSelectedSuggestion(suggestion)
-//     setInputValue(suggestion.fileName)
-//     setShowDropdown(false)
-//     setIsModalOpen(true)
-//   }
+//     setSelectedSuggestion(suggestion);
+//     setInputValue(suggestion.fileName);
+//     setShowDropdown(false);
+//     setIsModalOpen(true);
+//   };
 
 //   const closeModal = () => {
-//     setIsModalOpen(false)
-//     setSelectedSuggestion(null)
-//   }
+//     setIsModalOpen(false);
+//     setSelectedSuggestion(null);
+//   };
+
+//   const { data: fileData, isLoading } = useFilePreview({
+//     filename: selectedSuggestion?.fileName,
+//     filePath: selectedSuggestion ? `${selectedSuggestion.filePath}` : '',
+//   });
 
 //   return (
 //     <nav className="relative bg-white w-full h-[5rem] hidden md:block">
@@ -90,6 +79,7 @@
 //                 placeholder="Search"
 //                 value={inputValue}
 //                 onChange={handleInputChange}
+//                 autoComplete='off'
 //                 className="border border-gray-300 rounded-lg py-2 px-4 
 //                   w-[30rem] h-[2.5rem] focus:outline-none
 //                   focus:border-sky-300"
@@ -105,9 +95,8 @@
 //                         key={index}
 //                         className="py-2 px-4 hover:bg-gray-100 cursor-pointer"
 //                         onClick={() => handleSuggestionClick(suggestion)}
-//                         //onClick={handleSuggestionClick(suggestion)}
 //                       >
-//                         {suggestion.fileName} {/* Adjust based on the structure of your data */}
+//                         {suggestion.fileName}
 //                       </div>
 //                     ))
 //                   ) : (
@@ -179,22 +168,35 @@
 //             <div className="flex flex-col lg:flex-row gap-4 h-[42rem]">
 //               <div className="basis-full lg:basis-8/12 text-center border p-4 rounded">
 //                 <p>{selectedSuggestion.fileName}</p>
-//                 <Spinner size={30} />
+//                 {isLoading ? (
+//                   <Spinner size={30} />
+//                 ) : (
+//                   <embed
+//                     src={`http://localhost:3000/files/preview/${selectedSuggestion.filePath}/${selectedSuggestion.fileName}`}
+//                     className="w-full h-full"
+//                   />
+//                 )}
 //               </div>
 //               <div className="basis-full lg:basis-4/12 text-center border p-4 rounded">
 //                 <p>{selectedSuggestion.fileName}</p>
-//                 <Spinner size={30} />
+//                 {isLoading ? (
+//                   <Spinner size={30} />
+//                 ) : (
+//                   <embed
+//                     src={`http://localhost:3000/files/preview/${selectedSuggestion.filePath}/${selectedSuggestion.fileName}`}
+//                     className="w-full h-full"
+//                   />
+//                 )}
 //               </div>
 //             </div>
 //           </div>
 //         )}
 //       </Modal>
 //     </nav>
-//   )
-// }
+//   );
+// };
 
-// export default TopBar
-
+// export default TopBar;
 
 
 import { useState, useEffect } from 'react';
@@ -206,8 +208,11 @@ import { SlLogout, SlSettings } from 'react-icons/sl';
 import { useLogout } from '../../api/auth/logout';
 import { useUser } from '../../hooks/useUser';
 import { useFileSearch } from '../../hooks/fileSearch';
+import { useFilePreview } from '../../hooks/filePreview';
 import Modal from '../utility/Modal';
 import Spinner from '../utility/Spinner';
+import sanitizeFilePath from '../browse/file/SanitizeFilePath ';
+
 
 const TopBar = () => {
   const { data: user } = useUser();
@@ -233,7 +238,6 @@ const TopBar = () => {
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
 
   const { data: searchResults } = useFileSearch(inputValue);
-  console.log(searchResults, 'data');
 
   useEffect(() => {
     if (searchResults && searchResults.data && inputValue.trim() !== '') {
@@ -261,6 +265,12 @@ const TopBar = () => {
     setSelectedSuggestion(null);
   };
 
+  const { data: fileData, isLoading } = useFilePreview({
+    filename: selectedSuggestion?.fileName,
+    filePath: selectedSuggestion ? sanitizeFilePath(selectedSuggestion.filePath) : '',
+  });
+
+
   return (
     <nav className="relative bg-white w-full h-[5rem] hidden md:block">
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
@@ -273,6 +283,7 @@ const TopBar = () => {
                 placeholder="Search"
                 value={inputValue}
                 onChange={handleInputChange}
+                autoComplete='off'
                 className="border border-gray-300 rounded-lg py-2 px-4 
                   w-[30rem] h-[2.5rem] focus:outline-none
                   focus:border-sky-300"
@@ -361,11 +372,27 @@ const TopBar = () => {
             <div className="flex flex-col lg:flex-row gap-4 h-[42rem]">
               <div className="basis-full lg:basis-8/12 text-center border p-4 rounded">
                 <p>{selectedSuggestion.fileName}</p>
-                <Spinner size={30} />
+                {isLoading ? (
+                  <Spinner size={30} />
+                ) : (
+                  <embed
+                    src={`http://localhost:3000/files/preview/${sanitizeFilePath(selectedSuggestion.filePath)}/${selectedSuggestion.fileName}`}
+                    type="application/pdf"
+                    className="w-full h-full"
+                  />
+                )}
               </div>
               <div className="basis-full lg:basis-4/12 text-center border p-4 rounded">
                 <p>{selectedSuggestion.fileName}</p>
-                <Spinner size={30} />
+                {isLoading ? (
+                  <Spinner size={30} />
+                ) : (
+                  <embed
+                    src={`http://localhost:3000/files/preview/${sanitizeFilePath(selectedSuggestion.filePath)}/${selectedSuggestion.fileName}`}
+                    type="application/pdf"
+                    className="w-full h-full"
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -376,4 +403,8 @@ const TopBar = () => {
 };
 
 export default TopBar;
+
+
+
+
 
