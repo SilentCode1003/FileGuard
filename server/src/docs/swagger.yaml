@@ -171,6 +171,8 @@ paths:
                         type: string
                       filePath:
                         type: string
+                      fileMimeType:
+                        type: string
       responses:
         '200':
           description: Successful operation
@@ -266,20 +268,25 @@ paths:
         content:
           application/json:
             schema:
-              type: array
-              items:
-                type: object
-                properties:
-                  revFile:
-                    type: string
-                    format: base64
-                  revFileName:
-                    type: string
-                  revFilePath:
-                    type: string
-                  revFileId:
-                    type: string
-                    format: nanoid
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      revFile:
+                        type: string
+                        format: base64
+                      revFileName:
+                        type: string
+                      revFilePath:
+                        type: string
+                      revFileId:
+                        type: string
+                        format: nanoid
+                      revFileMimeType:
+                        type: string
       responses:
         '200':
           description: Successful operation
@@ -304,6 +311,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /files/preview/{completeFilePath}:
+    get:
+      tags:
+        - files
+      summary: Get a file preview
+      parameters:
+        - in: path
+          name: completeFilePath
+          schema:
+            type: string
+          description: The complete path of the file to get
+          required: true
+          example: 5L/Archive/HR/201/201.pdf
+      responses:
+        '200':
+          description: The requested file
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/msword:
+              schema:
+                type: string
+                format: binary
 
   /folders:
     get:
@@ -360,6 +397,9 @@ paths:
                   type: number
                   format: integer
                   example: 1
+                folderParentId:
+                  type: string
+                  format: nanoid
               required:
                 - folderName
                 - folderPath
