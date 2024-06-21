@@ -44,3 +44,7 @@ export const createRevisionsSchema = z.object({
     }),
   ),
 })
+
+export const previewFileSchema = z.object({
+  fileId: z.string({ required_error: 'fileId is required' }).nanoid(),
+})
