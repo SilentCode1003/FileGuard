@@ -58,7 +58,7 @@ const SideBar = () => {
   }, [isTab])
 
   const { isLoading, data, error } = useGetPath('folders', '/')
-
+  console.log()
   if (isLoading) {
     return (
       <div className="flex justify-center w-[16rem]">
@@ -68,7 +68,7 @@ const SideBar = () => {
   }
 
   if (error) {
-    return <h1>Error: {error}</h1>
+    return <h1>Error:</h1>
   }
 
   const rootPath = data.map((folder) => ({
