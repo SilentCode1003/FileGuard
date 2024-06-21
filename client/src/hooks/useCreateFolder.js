@@ -28,13 +28,19 @@ export function createDepthFolder() {
       const res = await apiClient.post('/folders', data)
       return res.data
     },
-    // onSuccess: async (data) => {
-    //   await queryClient.setQueryData(
-    //     ['folders', data.data.folderPath.replace('root', '/')],
-    //     (oldData) => {
-    //       return [...oldData, data.data]
-    //     },
-    //   )
-    // },
+    onSuccess: async (data) => {
+      await queryClient.setQueryData(
+        ['subfolder', data.data.folderPath.replace('root', '')],
+        (oldData) => {
+          return [...oldData, data.data]
+        },
+      )
+      await queryClient.setQueryData(
+        ['browse-folder', data.data.folderPath.replace('root', '')],
+        (oldData) => {
+          return [...oldData, data.data]
+        },
+      )
+    },
   })
 }

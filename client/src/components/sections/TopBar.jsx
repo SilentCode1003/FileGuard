@@ -34,7 +34,7 @@ const TopBar = () => {
   const [selectedSuggestion, setSelectedSuggestion] = useState(null)
 
   const { data: searchResults } = useFileSearch(inputValue)
-  console.log(searchResults, 'data')
+  // console.log(searchResults, 'data')
 
   useEffect(() => {
     if (searchResults && searchResults.data && inputValue.trim() !== '') {
