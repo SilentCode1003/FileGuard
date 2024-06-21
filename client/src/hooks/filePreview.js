@@ -36,7 +36,7 @@ export function useFilePreview({ filename, filePath }) {
     queryKey: [filename, sanitizedFilePath],
     queryFn: async () => {
       try {
-        const res = await apiClient.get(`/files/preview/${sanitizedFilePath}/${filename}`);
+        const res = await apiClient.use(`/files/preview/${sanitizedFilePath}/${filename}`);
         return res.data;
       } catch (error) {
         throw new Error('Failed to fetch preview results');
