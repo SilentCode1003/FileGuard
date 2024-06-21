@@ -106,17 +106,23 @@ export const searchFiles: RequestHandler = async (req, res) => {
 }
 
 export const createFile: RequestHandler = async (req, res) => {
-  const validatedBody = await createFileSchema.safeParseAsync({
+  const validatedBody = createFileSchema.safeParse(req.body)
+
+  if (!validatedBody.success) {
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
+  }
+
+  const validatedData = await createFileSchema.safeParseAsync({
     files: req.body.files.map((file: any) => ({ ...file, fileUserId: req.context.user!.userId })),
   })
 
-  if (!validatedBody.success) {
-    return res.status(400).json({ message: validatedBody.error.errors })
+  if (!validatedData.success) {
+    return res.status(400).json({ message: validatedData.error.errors[0]?.message })
   }
 
   try {
     let newFiles: Array<Omit<Files, 'fileBase'>> = []
-    for (const fileData of validatedBody.data.files) {
+    for (const fileData of validatedData.data.files) {
       const file = Buffer.from(fileData.file, 'base64')
 
       await prisma.$transaction(async (prisma) => {
