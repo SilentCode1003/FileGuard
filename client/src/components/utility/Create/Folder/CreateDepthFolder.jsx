@@ -30,7 +30,7 @@ const CreateDepthFolder = ({ closeModal }) => {
       folderDepth: folderDepth,
       folderParentId: findFolderId(folderDepth, url),
     }
-
+    console.log(data)
     try {
       await create(data)
     } catch (err) {
