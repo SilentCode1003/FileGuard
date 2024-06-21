@@ -39,6 +39,7 @@ const SideBarSubMenu = ({ data, currentPath = '' }) => {
   const path = submenuData.map((folder) => ({
     name: folder.folderName.replace(/([a-z])([A-Z])/g, '$1 $2'),
     id: folder.folderId,
+    depth: folder.folderDepth,
   }))
 
   const handleToggle = (e) => {
