@@ -1,29 +1,29 @@
 import { NavLink, useParams } from 'react-router-dom'
 import { useCallback, React } from 'react'
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-
 import { useDropzone } from 'react-dropzone'
 import { nanoid } from 'nanoid'
 import { FaFolderOpen } from 'react-icons/fa6'
-import { fileToBase64, splitPath } from '../utiliy/utility'
+import { fileToBase64, splitPath, mergeData } from '../utiliy/utility'
 
 import File from '../components/browse/file/File'
 import Folder from '../components/browse/Folder'
 import Spinner from '../components/utility/Spinner'
 
+import { useGetFilePath, useGetPath } from '../hooks/useGetPath'
+
 const initialFiles = [
-  { id: nanoid(), name: 'HR', type: 'folder' },
-  { id: nanoid(), name: 'Engineer', type: 'folder' },
-  { id: nanoid(), name: 'Legal', type: 'folder' },
-  { id: nanoid(), name: 'Sample.pdf', type: 'file', extension: 'pdf' },
-  { id: nanoid(), name: 'Report.docx', type: 'file', extension: 'docx' },
-  { id: nanoid(), name: 'Fridays Boracay.pdf', type: 'file', extension: 'pdf' },
-  { id: nanoid(), name: 'Fridays Puerto Galera.docx', type: 'file', extension: 'docx' },
-  { id: nanoid(), name: '2024 Billing.xlsx', type: 'file', extension: 'xlsx' },
-  { id: nanoid(), name: 'new office 2024.jpg', type: 'file', extension: 'jpg' },
-  { id: nanoid(), name: 'db-test.sql', type: 'file', extension: 'sql' },
-  { id: nanoid(), name: 'june-2024-meeting.pptx', type: 'file', extension: 'pptx' },
+  // { id: nanoid(), name: 'HR', type: 'folder' },
+  // { id: nanoid(), name: 'Engineer', type: 'folder' },
+  // { id: nanoid(), name: 'Legal', type: 'folder' },
+  // { id: nanoid(), name: 'Sample.pdf', type: 'file', extension: 'pdf' },
+  // { id: nanoid(), name: 'Report.docx', type: 'file', extension: 'docx' },
+  // { id: nanoid(), name: 'Fridays Boracay.pdf', type: 'file', extension: 'pdf' },
+  // { id: nanoid(), name: 'Fridays Puerto Galera.docx', type: 'file', extension: 'docx' },
+  // { id: nanoid(), name: '2024 Billing.xlsx', type: 'file', extension: 'xlsx' },
+  // { id: nanoid(), name: 'new office 2024.jpg', type: 'file', extension: 'jpg' },
+  // { id: nanoid(), name: 'db-test.sql', type: 'file', extension: 'sql' },
+  // { id: nanoid(), name: 'june-2024-meeting.pptx', type: 'file', extension: 'pptx' },
 ]
 
 const uploadFiles = async (files) => {
@@ -36,6 +36,9 @@ const Browse = () => {
   const params = useParams()
   const { '*': path } = params
   const breadcrumbs = splitPath(path)
+  const refinedPath = `/${path.replace(/-/g, '').replace(/\s+/g, '')}`
+  const fileQuery = useGetFilePath('browse-files', refinedPath)
+  const folderQuery = useGetPath('browse-folder', refinedPath)
 
   const newFilesMutation = useMutation({
     mutationFn: uploadFiles,
@@ -63,24 +66,19 @@ const Browse = () => {
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop })
 
-  const filesQuery = useQuery({
-    queryKey: ['files'],
-    queryFn: () => wait(1000).then(() => [...initialFiles]),
-  })
-
-  if (filesQuery.isLoading) {
+  if (fileQuery.isLoading && folderQuery.isLoading)
     return (
-      <div className="flex justify-center">
-        <Spinner size={50} />
+      <div className="flex justify-center align-middle">
+        <Spinner />
       </div>
     )
-  }
 
-  if (filesQuery.error) {
-    console.log(filesQuery.error)
-    return <div className="flex justify-center">Error</div>
-  }
+  if (fileQuery.isError && folderQuery.isError)
+    return <div className="flex justify-center align-middle">Error Fetching Files</div>
 
+  const display = mergeData(fileQuery.data, folderQuery.data)
+
+  // console.log(display)
   return (
     <div className="px-2 lg:px-24">
       <div className="py-4 text-2xl flex space-x-2">
@@ -91,7 +89,7 @@ const Browse = () => {
               to={`/browse/${crumb.path}`}
               className="text-md p-2 rounded-md hover:bg-slate-200 capitalize"
             >
-              {crumb.name}
+              {crumb.name.replace(/-/g, ' ')}
             </NavLink>
           </div>
         ))}
@@ -104,7 +102,7 @@ const Browse = () => {
         <input {...getInputProps()} />
       </div>
       <div className="max-h-[41rem] overflow-y-auto scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-300">
-        {filesQuery.data.length === 0 ? (
+        {display.length === 0 ? (
           <div className="flex justify-center">
             <div className="flex-col text-center">
               <FaFolderOpen size={100} className="text-slate-500 mx-auto my-10" />
@@ -117,7 +115,7 @@ const Browse = () => {
         ) : (
           <div className="max-h-[41rem] overflow-y-auto scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-300">
             <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4 w-full">
-              {filesQuery.data.map((file) =>
+              {display.map((file) =>
                 file.type === 'file' ? (
                   <File key={file.id} file={file} />
                 ) : (
