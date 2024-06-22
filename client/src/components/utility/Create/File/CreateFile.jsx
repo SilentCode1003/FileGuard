@@ -15,7 +15,7 @@ const CreateFile = () => {
       const newFilesPromises = acceptedFiles.map(async (file) => ({
         file: await fileToBase64(file),
         fileName: file.name,
-        filePath: url.replace('/browse', ''),
+        filePath: decodeURI(url.replace('/browse', '')),
         type: 'file',
         fileMimeType: file.type,
       }))
@@ -24,12 +24,11 @@ const CreateFile = () => {
       const newObject = {
         files: newFiles,
       }
-      // console.log(newObject)
       if (folderDepth > 4) {
         try {
           await create(newObject)
         } catch (err) {
-          // console.log(err)
+          console.log(err)
           if (err?.response?.data?.message === 'File already exists!') {
             toast.error(err?.response?.data?.message, { theme: 'dark' })
           }

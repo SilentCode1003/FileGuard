@@ -18,7 +18,7 @@ const CreateDepthFolder = ({ closeModal }) => {
       const parts = url.split('/')
       parts.pop()
       const newUrl = parts.join('/').replace('/browse', '')
-      return ['subfolder', newUrl]
+      return ['folders', newUrl]
     }
   }, [folderDepth, url])
   // console.log('queryKey:', queryKey)
@@ -27,9 +27,9 @@ const CreateDepthFolder = ({ closeModal }) => {
     e.preventDefault()
     const data = {
       folderName: folderName,
-      folderPath: `${url.replace('/browse/', '')}`,
+      folderPath: `${decodeURI(url.replace('/browse/', ''))}`,
       folderDepth: folderDepth,
-      folderParentId: findFolderId(folderDepth, url),
+      // folderParentId: findFolderId(folderDepth, url),
     }
 
     try {

@@ -26,7 +26,7 @@ const Folder = ({ folder }) => {
   }
 
   const navigateToPath = () => {
-    navigate(`${pathname}/${folder.name.toLowerCase()}`)
+    navigate(`${pathname}/${folder.name}`)
   }
 
   return (

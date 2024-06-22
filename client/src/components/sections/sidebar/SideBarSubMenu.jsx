@@ -17,10 +17,12 @@ const SideBarSubMenu = ({ data, currentPath = '' }) => {
   if (validatedCurrentPath) {
     fullPath += `${validatedCurrentPath}`
   }
-  fullPath += `/${data.name.replace(/\s+/g, '-').toLowerCase()}`
+  fullPath += `/${data.name}`
 
-  const folderPath = `${validatedCurrentPath}/${data.name.replace(/\s+/g, '').toLowerCase()}`
-  const folderQuery = useGetPath('subfolder', folderPath.replace(/-/g, ''))
+  // console.log(fullPath)
+
+  const folderPath = `${validatedCurrentPath}/${data.name}`
+  const folderQuery = useGetPath('folders', folderPath)
 
   if (folderQuery.isLoading)
     return (
@@ -77,7 +79,7 @@ const SideBarSubMenu = ({ data, currentPath = '' }) => {
             <SideBarSubMenu
               key={menu.id}
               data={menu}
-              currentPath={`/${validatedCurrentPath}/${data.name.replace(/\s+/g, '-').toLowerCase()}`}
+              currentPath={`/${validatedCurrentPath}/${data.name}`}
             />
           ))}
       </motion.ul>
