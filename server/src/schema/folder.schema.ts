@@ -9,7 +9,7 @@ export const createFolderSchema = z.object({
     .string({ required_error: 'folderPath is required' })
     .trim()
     .min(1, { message: 'folderPath is required' }),
-  folderParentId: z.string().trim().min(1).optional(),
+  folderParentId: z.string().trim().optional(),
   folderUserId: z.string({ required_error: 'folderUserId is required' }).nanoid(),
   folderDepth: z.number({ required_error: 'folderDepth is required' }),
 })
