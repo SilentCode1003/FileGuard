@@ -195,7 +195,7 @@ const TopBar = () => {
              </div>
            </div>
          )}
-       </FileView>
+      </FileView>
     </nav>
   );
 };
