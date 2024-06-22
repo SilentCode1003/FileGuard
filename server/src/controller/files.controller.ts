@@ -7,6 +7,7 @@ import PdfParse from 'pdf-parse'
 import * as xlsx from 'xlsx'
 import { CONFIG } from '../config/env.config.js'
 import { prisma } from '../db/prisma'
+import { nanoid } from '../util/nano.util'
 import {
   createFileSchema,
   createRevisionsSchema,
@@ -15,7 +16,10 @@ import {
   searchFilesSchema,
 } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
-import { nanoid } from '../util/nano.util'
+// import PdfParse from 'pdf-parse'
+// import mammoth from 'mammoth'
+// import * as xlsx from 'xlsx'
+// import { log } from 'console'
 
 export const getFilesByPath: RequestHandler = async (req, res) => {
   const validatedBody = getFilesByPathSchema.safeParse(req.query)
@@ -106,7 +110,11 @@ export const searchFiles: RequestHandler = async (req, res) => {
 }
 
 export const createFile: RequestHandler = async (req, res) => {
+  console.log(req.context)
+  
   const validatedBody = createFileSchema.safeParse(req.body)
+  
+
 
   if (!validatedBody.success) {
     return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
@@ -116,9 +124,14 @@ export const createFile: RequestHandler = async (req, res) => {
     files: req.body.files.map((file: any) => ({ ...file, fileUserId: req.context.user!.userId })),
   })
 
+
   if (!validatedData.success) {
     return res.status(400).json({ message: validatedData.error.errors[0]?.message })
   }
+
+  console.log(validatedData.data.files)
+  console.log(validatedBody.data.files)
+  
 
   try {
     let newFiles: Array<Omit<Files, 'fileBase'>> = []
@@ -268,6 +281,8 @@ export const createFile: RequestHandler = async (req, res) => {
     }
     return res.status(200).json({ data: newFiles })
   } catch (error) {
+    console.log(error)
+    
     if (error instanceof Error) {
       console.log(error.message)
       res.statusMessage = error.message
