@@ -53,3 +53,12 @@ export const createRevisionsSchema = z.object({
 export const previewFileSchema = z.object({
   fileId: z.string({ required_error: 'fileId is required' }).nanoid(),
 })
+
+export const advancedSearchSchema = z.object({
+  companyName: z.string().optional(),
+  fileType: z.string().optional(),
+  documentType: z.string().optional(),
+  department: z.string().optional(),
+  fromDate: z.string().date().optional(),
+  toDate: z.string().date().optional(),
+})
