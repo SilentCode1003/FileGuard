@@ -10,7 +10,7 @@ export function createFile() {
     },
     onSuccess: async (data) => {
       await queryClient.setQueryData(['browse-files', data.data[0].filePath], (oldData) => {
-        return [...oldData, data.data]
+        return [...oldData, ...data.data]
       })
     },
   })
