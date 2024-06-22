@@ -2,6 +2,9 @@ import type { Files, Revisions } from '@prisma/client'
 import type { RequestHandler } from 'express'
 import { readFileSync, writeFile } from 'fs'
 import { writeFile as asyncWriteFile } from 'fs/promises'
+import mammoth from 'mammoth'
+import PdfParse from 'pdf-parse'
+import * as xlsx from 'xlsx'
 import { CONFIG } from '../config/env.config.js'
 import { prisma } from '../db/prisma'
 import {
@@ -13,9 +16,6 @@ import {
 } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
 import { nanoid } from '../util/nano.util'
-import PdfParse from 'pdf-parse'
-import mammoth from 'mammoth'
-import * as xlsx from 'xlsx'
 
 export const getFilesByPath: RequestHandler = async (req, res) => {
   const validatedBody = getFilesByPathSchema.safeParse(req.query)
@@ -35,7 +35,7 @@ export const getFilesByPath: RequestHandler = async (req, res) => {
     }
     const files = await prisma.files.findMany({
       where: {
-        filePath: `root${validatedBody.data.filePath === '/' ? '' : validatedBody.data.filePath}`,
+        filePath: `/${validatedBody.data.filePath === '/' ? '' : validatedBody.data.filePath}`,
       },
       omit: {
         fileBase: true,
@@ -126,13 +126,13 @@ export const createFile: RequestHandler = async (req, res) => {
       const file = Buffer.from(fileData.file, 'base64')
 
       await prisma.$transaction(async (prisma) => {
-        const filePath = `./root${fileData.filePath}/${fileData.fileName}`
+        const filePath = `${CONFIG.FILE_SERVER === 'root' ? './' : ''}${CONFIG.FILE_SERVER}${fileData.filePath}/${fileData.fileName}`
 
         const checkFile = await prisma.files.findFirst({
           where: {
             AND: [
               {
-                filePath: `root${fileData.filePath}`,
+                filePath: `${fileData.filePath}`,
               },
               {
                 fileName: fileData.fileName,
@@ -140,6 +140,7 @@ export const createFile: RequestHandler = async (req, res) => {
             ],
           },
         })
+
         if (checkFile) {
           throw new Error('File already exists!')
         } else {
@@ -149,7 +150,7 @@ export const createFile: RequestHandler = async (req, res) => {
               fileBase: fileData.file,
               fileId: newFileId,
               fileName: fileData.fileName,
-              filePath: `root${fileData.filePath}`,
+              filePath: `${fileData.filePath}`,
               fileUserId: req.context.user.userId,
             },
             omit: {
@@ -157,8 +158,8 @@ export const createFile: RequestHandler = async (req, res) => {
             },
           })
 
-          const folderName = /\w+$/gi.exec(fileData.filePath)!
-          const folderPath = `root${getFolderPath(fileData.filePath)}`
+          const folderName = /[\s\w]+$/gi.exec(fileData.filePath)!
+          const folderPath = `${getFolderPath(fileData.filePath)}`
 
           const folder = await prisma.folders.findFirst({
             where: {
@@ -179,12 +180,25 @@ export const createFile: RequestHandler = async (req, res) => {
               ffFileId: newFileId,
             },
           })
-
           await asyncWriteFile(filePath, file)
 
           let databuffer = readFileSync(filePath)
           if (fileData.fileMimeType == 'application/pdf') {
             const content = (await PdfParse(databuffer)).text.replaceAll(/\s+/g, '')
+
+            // const pdfArray = await convert(filePath)
+            // console.log('saving')
+            // for (let i = 0; i < pdfArray.length; i++) {
+            //   writeFile('./root/test.png', pdfArray[i]!, function (error) {
+            //     if (error) {
+            //       console.error('Error: ' + error)
+            //     }
+            //   }) //writeFile
+            // } // for
+
+            // const tworker = await Tesseract.recognize(img)
+
+            // console.log(tworker.data.text)
 
             const newFileContentId = nanoid()
             await prisma.fileContents.create({
@@ -194,6 +208,7 @@ export const createFile: RequestHandler = async (req, res) => {
                 fcContent: content,
               },
             })
+
             console.log(`this file is a pdf file: ${fileData.fileName}`)
           }
 
@@ -262,36 +277,30 @@ export const createFile: RequestHandler = async (req, res) => {
 }
 
 export const createRevisions: RequestHandler = async (req, res) => {
-  const validatedBody = createRevisionsSchema.safeParse(req.body)
-
-  if (!validatedBody.success) {
-    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
-  }
-
-  const validatedData = await createRevisionsSchema.safeParseAsync({
+  const validatedBody = await createRevisionsSchema.safeParseAsync({
     files: req.body.files.map((file: any) => ({
       ...file,
       revFileUserId: req.context.user!.userId,
     })),
   })
 
-  if (!validatedData.success) {
-    return res.status(400).json({ message: validatedData.error.errors[0]?.message })
+  if (!validatedBody.success) {
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
   }
 
   try {
     let newRevisions: Array<Omit<Revisions, 'revFileBase'>> = []
-    for (const fileData of validatedData.data.files) {
+    for (const fileData of validatedBody.data.files) {
       const file = Buffer.from(fileData.revFile, 'base64')
 
       await prisma.$transaction(async (prisma) => {
-        const filePath = `./root${fileData.revFilePath}/${fileData.revFileName}`
+        const filePath = `${CONFIG.FILE_SERVER === 'root' ? './' : ''}${CONFIG.FILE_SERVER}${fileData.revFilePath}/${fileData.revFileName}`
 
         const checkRevision = await prisma.revisions.findFirst({
           where: {
             AND: [
               {
-                revFilePath: `root${fileData.revFilePath}`,
+                revFilePath: `${fileData.revFilePath}`,
               },
               {
                 revFileName: fileData.revFileName,
@@ -313,7 +322,7 @@ export const createRevisions: RequestHandler = async (req, res) => {
               revFileBase: fileData.revFile,
               revFileId: fileData.revFileId,
               revFileName: fileData.revFileName,
-              revFilePath: `root${fileData.revFilePath}`,
+              revFilePath: `${fileData.revFilePath}`,
               revUserId: req.context.user.userId,
               revId: newRevId,
             },
@@ -322,8 +331,8 @@ export const createRevisions: RequestHandler = async (req, res) => {
             },
           })
 
-          const folderName = /\w+/gi.exec(fileData.revFilePath)!
-          const folderPath = `root${getFolderPath(fileData.revFilePath)}`
+          const folderName = /[\s\w]+$/gi.exec(fileData.revFilePath)!
+          const folderPath = `${getFolderPath(fileData.revFilePath)}`
 
           const folder = await prisma.folders.findFirst({
             where: {
@@ -366,11 +375,11 @@ export const uploadFile: RequestHandler = async (req, res) => {
       filecontent: string
       mimeType: string
     }
-    const targetFolder = `${CONFIG.IS_FILE_SERVER == true ? CONFIG.FILE_SERVER : 'root'}`
+    // const targetFolder = `${CONFIG.FILE_SERVER}`
     const userId = req.context.user.userId
     let folders = filename.split('_')
 
-    let companyFolder = `${targetFolder}/${folders[0]}`
+    let companyFolder = `/${folders[0]}`
     let yearOrArchive = `${companyFolder}/${folders[1]}`
     let departmentFolder = `${yearOrArchive}/${folders[2]}`
     let documentTypeFolder = `${departmentFolder}/${folders[3]}`
@@ -419,7 +428,7 @@ export const uploadFile: RequestHandler = async (req, res) => {
         }
 
         //check if folder exists
-        const folderName = /\w+$/i.exec(documentTypeFolder)!
+        const folderName = /[\s\w]+$/i.exec(documentTypeFolder)!
         const folderPath = getFolderPath(documentTypeFolder)
 
         const folder = await prisma.folders.findFirst({
@@ -427,9 +436,6 @@ export const uploadFile: RequestHandler = async (req, res) => {
             AND: [{ folderName: folderName[folderName.length - 1]! }, { folderPath: folderPath }],
           },
         })
-
-        console.log(folder?.folderPath)
-        console.log(documentTypeFolder)
 
         if (!folder) {
           throw new Error('Folder not found!')
@@ -468,8 +474,6 @@ export const uploadFile: RequestHandler = async (req, res) => {
       })
     } else {
       if (folders.length > 4) {
-        // console.log(folders[0], folders[1], folders[2], folders[3])
-
         await createFolder(companyFolder, 0, userId)
         await createFolder(yearOrArchive, 1, userId)
         await createFolder(departmentFolder, 2, userId)
@@ -497,7 +501,7 @@ export const uploadFile: RequestHandler = async (req, res) => {
             throw new Error('File already exists!')
           }
 
-          const folderName = /\w+$/i.exec(documentTypeFolder)!
+          const folderName = /[\s\w]+$/i.exec(documentTypeFolder)!
           const folderPath = getFolderPath(documentTypeFolder)
 
           const folder = await prisma.folders.findFirst({
@@ -532,7 +536,9 @@ export const uploadFile: RequestHandler = async (req, res) => {
             },
           })
 
-          let databuffer = readFileSync(`${documentTypeFolder}/${filename}`)
+          let databuffer = readFileSync(
+            `${CONFIG.FILE_SERVER === 'root' ? './' : ''}${CONFIG.FILE_SERVER}${documentTypeFolder}/${filename}`,
+          )
 
           if (mimeType === 'application/pdf') {
             const content = (await PdfParse(databuffer)).text.replaceAll(/\s+/g, '')

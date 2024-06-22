@@ -12,7 +12,6 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   MONGODB_URL: z.string(),
   FILE_SERVER: z.string(),
-  IS_FILE_SERVER: z.string().transform((value) => (value ==='true' ? true : false)),
 })
 
 const validatedEnv = envSchema.safeParse(process.env)
@@ -30,5 +29,4 @@ export const CONFIG = {
   CLIENT_ORIGIN: validatedEnv.data.CLIENT_ORIGIN,
   MONGODB_URL: validatedEnv.data.MONGODB_URL,
   FILE_SERVER: validatedEnv.data.FILE_SERVER,
-  IS_FILE_SERVER: validatedEnv.data.IS_FILE_SERVER,
 } as const
