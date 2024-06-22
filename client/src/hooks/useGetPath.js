@@ -15,7 +15,7 @@ export function useGetPath(key, folderPath) {
 
 export function useGetFilePath(key, filePath) {
   return useQuery({
-    queryKey: [key, filePath],
+    queryKey: [key, `/${filePath}`],
     queryFn: async () => {
       const queryParams = new URLSearchParams({ filePath })
       const res = await apiClient.get('/files?' + queryParams)
