@@ -23,9 +23,9 @@ const Browse = () => {
   const params = useParams()
   const { '*': path } = params
   const breadcrumbs = splitPath(path)
-  const refinedPath = `/${path}`
+  const refinedPath = `${path}`
   const fileQuery = useGetFilePath('browse-files', refinedPath)
-  const folderQuery = useGetPath('browse-folder', refinedPath)
+  const folderQuery = useGetPath('browse-folder', `/${refinedPath}`)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
 
