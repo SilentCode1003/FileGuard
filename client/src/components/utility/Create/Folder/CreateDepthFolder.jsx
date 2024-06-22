@@ -29,7 +29,7 @@ const CreateDepthFolder = ({ closeModal }) => {
       folderName: folderName,
       folderPath: `${decodeURI(url.replace('/browse/', ''))}`,
       folderDepth: folderDepth,
-      folderParentId: findFolderId(folderDepth, url),
+      // folderParentId: findFolderId(folderDepth, url),
     }
 
     try {
