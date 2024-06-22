@@ -22,7 +22,7 @@ const FileIcon = ({ extension }) => {
     case 'jpeg':
       return <FaFileImage className="text-sky-400" />
     default:
-      return <FaFileAlt />
+      return <FaFileAlt className="text-slate-700" />
   }
 }
 
