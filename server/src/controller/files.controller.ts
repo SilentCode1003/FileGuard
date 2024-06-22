@@ -3,14 +3,12 @@ import type { RequestHandler } from 'express'
 import { readFileSync, writeFile } from 'fs'
 import { writeFile as asyncWriteFile } from 'fs/promises'
 import mammoth from 'mammoth'
-import pdf2img from 'pdf-img-convert'
 import PdfParse from 'pdf-parse'
-import Tesseract from 'tesseract.js'
 import * as xlsx from 'xlsx'
 import { CONFIG } from '../config/env.config.js'
 import { prisma } from '../db/prisma'
-import { nanoid } from '../util/nano.util'
 import {
+  advancedSearchSchema,
   createFileSchema,
   createRevisionsSchema,
   getFilesByPathSchema,
@@ -18,10 +16,7 @@ import {
   searchFilesSchema,
 } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
-// import PdfParse from 'pdf-parse'
-// import mammoth from 'mammoth'
-// import * as xlsx from 'xlsx'
-// import { log } from 'console'
+import { nanoid } from '../util/nano.util'
 
 export const getFilesByPath: RequestHandler = async (req, res) => {
   const validatedBody = getFilesByPathSchema.safeParse(req.query)
@@ -113,10 +108,8 @@ export const searchFiles: RequestHandler = async (req, res) => {
 
 export const createFile: RequestHandler = async (req, res) => {
   console.log(req.context)
-  
-  const validatedBody = createFileSchema.safeParse(req.body)
-  
 
+  const validatedBody = createFileSchema.safeParse(req.body)
 
   if (!validatedBody.success) {
     return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
@@ -126,14 +119,12 @@ export const createFile: RequestHandler = async (req, res) => {
     files: req.body.files.map((file: any) => ({ ...file, fileUserId: req.context.user!.userId })),
   })
 
-
   if (!validatedData.success) {
     return res.status(400).json({ message: validatedData.error.errors[0]?.message })
   }
 
   console.log(validatedData.data.files)
   console.log(validatedBody.data.files)
-  
 
   try {
     let newFiles: Array<Omit<Files, 'fileBase'>> = []
@@ -202,48 +193,56 @@ export const createFile: RequestHandler = async (req, res) => {
             if (fileData.fileMimeType == 'application/pdf') {
               const content = (await PdfParse(databuffer)).text.replaceAll(/\s+/g, '')
 
-              if (content === '') {
-                // If the content is empty, we assume that the file only contains images
-                let ocrContent = ''
+              // if (content === '') {
+              //   // If the content is empty, we assume that the file only contains images
+              //   let ocrContent = ''
 
-                const worker = await Tesseract.createWorker('eng', 1)
-                const outputImages = await pdf2img.convert(
-                  'https://css4.pub/2015/icelandic/dictionary.pdf',
-                  { scale: 2 },
-                )
+              //   const worker = await Tesseract.createWorker('eng', 1)
+              //   const outputImages = await pdf2img.convert(databuffer, { scale: 2 })
 
-                for (const page of outputImages) {
-                  if (page instanceof Uint8Array) {
-                    const data = await worker.recognize(page)
-                    ocrContent += data.data.text
-                    console.log(data.data.text)
-                  }
-                }
+              //   for (const page of outputImages) {
+              //     if (page instanceof Uint8Array) {
+              //       const data = await worker.recognize(page)
+              //       ocrContent += data.data.text
+              //       console.log(data.data.text)
+              //     }
+              //   }
 
-                await worker.terminate()
+              //   await worker.terminate()
 
-                const newFileContentId = nanoid()
-                await prisma.fileContents.create({
-                  data: {
-                    fcId: newFileContentId,
-                    fcFileId: newFileId,
-                    fcContent: ocrContent,
-                  },
-                })
-              } else {
-                // If the content is not empty, we assume that the file contains a combination of text and images. We will however, not use OCR on the images
+              //   const newFileContentId = nanoid()
+              //   await prisma.fileContents.create({
+              //     data: {
+              //       fcId: newFileContentId,
+              //       fcFileId: newFileId,
+              //       fcContent: ocrContent,
+              //     },
+              //   })
+              // } else {
+              //   // If the content is not empty, we assume that the file contains a combination of text and images. We will however, not use OCR on the images
 
-                const newFileContentId = nanoid()
-                await prisma.fileContents.create({
-                  data: {
-                    fcId: newFileContentId,
-                    fcFileId: newFileId,
-                    fcContent: content,
-                  },
-                })
+              //   const newFileContentId = nanoid()
+              //   await prisma.fileContents.create({
+              //     data: {
+              //       fcId: newFileContentId,
+              //       fcFileId: newFileId,
+              //       fcContent: content,
+              //     },
+              //   })
 
-                console.log(`this file is a pdf file: ${fileData.fileName}`)
-              }
+              //   console.log(`this file is a pdf file: ${fileData.fileName}`)
+              // }
+
+              const newFileContentId = nanoid()
+              await prisma.fileContents.create({
+                data: {
+                  fcId: newFileContentId,
+                  fcFileId: newFileId,
+                  fcContent: content,
+                },
+              })
+
+              console.log(`this file is a pdf file: ${fileData.fileName}`)
             }
 
             if (
@@ -305,7 +304,7 @@ export const createFile: RequestHandler = async (req, res) => {
     return res.status(200).json({ data: newFiles })
   } catch (error) {
     console.log(error)
-    
+
     if (error instanceof Error) {
       console.log(error.message)
       res.statusMessage = error.message
@@ -652,5 +651,53 @@ export const uploadFile: RequestHandler = async (req, res) => {
       res.statusMessage = error.message
       return res.status(500).send({ message: error.message })
     }
+  }
+}
+
+export const advancedSearch: RequestHandler = async (req, res) => {
+  const validatedQueryParams = advancedSearchSchema.safeParse(req.query)
+
+  if (!validatedQueryParams.success) {
+    return res.status(400).json({ message: validatedQueryParams.error.errors[0]?.message })
+  }
+
+  try {
+    const files = await prisma.files.findMany({
+      where: {
+        AND: [
+          validatedQueryParams.data.fileType
+            ? {
+                fileName: {
+                  endsWith: `.${validatedQueryParams.data.fileType}`,
+                },
+              }
+            : {},
+          validatedQueryParams.data.companyName
+            ? {
+                filePath: {
+                  startsWith: `/${validatedQueryParams.data.companyName}`,
+                },
+              }
+            : {},
+          validatedQueryParams.data.fromDate && validatedQueryParams.data.toDate
+            ? {
+                createdAt: {
+                  gte: new Date(validatedQueryParams.data.fromDate),
+                  lte: new Date(validatedQueryParams.data.toDate),
+                },
+              }
+            : {},
+          // TODO: documentType, department
+        ],
+      },
+      omit: {
+        fileBase: true,
+      },
+    })
+
+    res.status(200).json({ data: files })
+  } catch (err) {
+    // TODO: Handle errors
+    res.status(500).json({ message: err })
   }
 }
