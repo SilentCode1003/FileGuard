@@ -9,12 +9,9 @@ export function createFile() {
       return res.data
     },
     onSuccess: async (data) => {
-      await queryClient.setQueryData(
-        ['browse-files', data.data[0].filePath.replace('root', '')],
-        (oldData) => {
-          return [...oldData, data.data[0]]
-        },
-      )
+      await queryClient.setQueryData(['browse-files', data.data[0].filePath], (oldData) => {
+        return [...oldData, data.data[0]]
+      })
     },
   })
 }
