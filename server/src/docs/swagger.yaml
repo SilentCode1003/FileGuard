@@ -312,6 +312,75 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /files/advanced-search:
+    get:
+      tags:
+        - files
+      summary: Search files
+      parameters:
+        - name: companyName
+          in: query
+          description: The company name to search
+          required: false
+          schema:
+            type: string
+        - name: fileType
+          in: query
+          description: The file type to search
+          required: false
+          schema:
+            type: string
+        # - name: documentType
+        #   in: query
+        #   description: The document type to search
+        #   required: false
+        #   schema:
+        #     type: string
+        - name: department
+          in: query
+          description: The department to search
+          required: false
+          schema:
+            type: string
+        - name: fromDate
+          in: query
+          description: The from date to search
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: toDate
+          in: query
+          description: The to date to search
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: keyword
+          in: query
+          description: The keyword to search
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Files'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /files/preview/{completeFilePath}:
     get:
       tags:
