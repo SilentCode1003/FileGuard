@@ -18,7 +18,7 @@ const CreateDepthFolder = ({ closeModal }) => {
       const parts = url.split('/')
       parts.pop()
       const newUrl = parts.join('/').replace('/browse', '')
-      return ['subfolder', newUrl]
+      return ['folders', newUrl]
     }
   }, [folderDepth, url])
   // console.log('queryKey:', queryKey)

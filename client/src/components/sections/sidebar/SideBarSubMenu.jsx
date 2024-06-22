@@ -22,7 +22,7 @@ const SideBarSubMenu = ({ data, currentPath = '' }) => {
   console.log(fullPath)
 
   const folderPath = `${validatedCurrentPath}/${data.name}`
-  const folderQuery = useGetPath('subfolder', folderPath)
+  const folderQuery = useGetPath('folders', folderPath)
 
   if (folderQuery.isLoading)
     return (
