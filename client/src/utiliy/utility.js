@@ -59,3 +59,7 @@ export function calculateDepth(pathname) {
   const segments = pathname.split('/').filter((segment) => segment !== '')
   return segments.length
 }
+
+export function sanitizeFilePath(filePath) {
+  return filePath.startsWith('root/') ? filePath.slice(5) : filePath
+}
