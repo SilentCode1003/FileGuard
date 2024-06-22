@@ -24,12 +24,11 @@ const CreateFile = () => {
       const newObject = {
         files: newFiles,
       }
-      // console.log(newObject)
       if (folderDepth > 4) {
         try {
           await create(newObject)
         } catch (err) {
-          // console.log(err)
+          console.log(err)
           if (err?.response?.data?.message === 'File already exists!') {
             toast.error(err?.response?.data?.message, { theme: 'dark' })
           }

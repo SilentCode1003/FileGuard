@@ -27,12 +27,15 @@ export function createDepthFolder() {
       return res.data
     },
     onSuccess: async (data) => {
+      console.log('data:', data)
       await queryClient.setQueryData(
         ['subfolder', data.data.folderPath.replace('root', '')],
         (oldData) => {
+          // console.log('oldData:', oldData)
           return [...oldData, data.data]
         },
       )
+      // await queryClient.refetchQueries({ queryKey: ['subfolder'] })
       await queryClient.setQueryData(
         ['browse-folder', data.data.folderPath.replace('root', '')],
         (oldData) => {
