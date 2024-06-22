@@ -18,7 +18,7 @@ import { companyDepartmentRouter } from '../routes/companyDepartment.route'
 export const initRoutes = (app: Express) => {
   app.post('/upload', serviceAuth, uploadFile)
   app.use('/auth', authRouter)
-  app.use(auth)
+  //app.use(auth)
   app.use('/health', healthRouter)
   app.use('/files', filesRouter)
   app.use('/folders', foldersRouter)
