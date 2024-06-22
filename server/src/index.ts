@@ -17,8 +17,8 @@ const startServer = () => {
   logger.info('--------------------Server starting--------------------')
   logger.info(`Running application on ${CONFIG.NODE_ENV} environment`)
 
-  if (!existsSync('root')) {
-    mkdir('root', (err) => {
+  if (!existsSync(CONFIG.FILE_SERVER)) {
+    mkdir(CONFIG.FILE_SERVER, (err) => {
       if (err) throw err
       logger.info('Root folder created')
     })
