@@ -359,7 +359,7 @@ paths:
         - name: keyword
           in: query
           description: The keyword to search
-          required: false
+          required: true
           schema:
             type: string
       responses:
