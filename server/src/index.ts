@@ -1,4 +1,5 @@
 import express from 'express'
+import { existsSync, mkdir } from 'fs'
 import { CONFIG } from './config/env.config'
 import { prisma } from './db/prisma.js'
 import { notFoundController } from './middlewares/404.middleware'
@@ -6,10 +7,10 @@ import { errorController } from './middlewares/error.middleware'
 import { loggerMiddleware } from './middlewares/logger.middleware'
 import { initDocs } from './providers/swagger.provider'
 import { initCors } from './startup/cors.startup'
+import { initProxy } from './startup/proxy.startup'
 import { initRoutes } from './startup/routes.startup'
 import { initSession } from './startup/session.startup'
 import { logger } from './util/logger.util'
-import { existsSync, mkdir } from 'fs'
 
 const app = express()
 
@@ -25,6 +26,9 @@ const startServer = () => {
   } else {
     logger.info('Root folder already exists')
   }
+
+  logger.info('Setting trust proxy')
+  initProxy(app)
 
   logger.info('Adding req body json parser')
   app.use(express.json({ limit: '1gb' }))
