@@ -24,12 +24,15 @@ export function createDepthFolder() {
       return res.data
     },
     onSuccess: async (data) => {
-      await queryClient.setQueryData(['subfolder', data.data.folderPath], (oldData) => {
+      await queryClient.setQueryData(['folders', data.data.folderPath], (oldData) => {
         return [...oldData, data.data]
       })
-      await queryClient.setQueryData(['browse-folder', data.data.folderPath], (oldData) => {
-        return [...oldData, data.data]
-      })
+      // await queryClient.invalidateQueries({
+      //   queryKey: ['browse-folder'],
+      // })
+      // await queryClient.setQueryData(['browse-folder', data.data.folderPath], (oldData) => {
+      //   return [...oldData, data.data]
+      // })
     },
   })
 }
