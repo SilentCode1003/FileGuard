@@ -687,7 +687,26 @@ export const advancedSearch: RequestHandler = async (req, res) => {
                 },
               }
             : {},
-          // TODO: documentType, department
+          // TODO: fix this
+          validatedQueryParams.data.department
+            ? {
+                filePath: {
+                  contains: `/${validatedQueryParams.data.department}`,
+                },
+              }
+            : {},
+          validatedQueryParams.data.keyword
+            ? {
+                fileContents: {
+                  some: {
+                    fcContent: {
+                      contains: validatedQueryParams.data.keyword,
+                    },
+                  },
+                },
+              }
+            : {},
+          // TODO: documentType
         ],
       },
       omit: {
