@@ -27,11 +27,11 @@ const CreateDepthFolder = ({ closeModal }) => {
     e.preventDefault()
     const data = {
       folderName: folderName,
-      folderPath: `${url.replace('/browse', '')}`,
+      folderPath: `${url.replace('/browse/', '')}`,
       folderDepth: folderDepth,
       folderParentId: findFolderId(folderDepth, url),
     }
-    console.log('folder data:', data)
+
     try {
       await create(data)
     } catch (err) {
