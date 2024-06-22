@@ -15,7 +15,7 @@ const CreateFile = () => {
       const newFilesPromises = acceptedFiles.map(async (file) => ({
         file: await fileToBase64(file),
         fileName: file.name,
-        filePath: url.replace('/browse', ''),
+        filePath: decodeURI(url.replace('/browse', '')),
         type: 'file',
         fileMimeType: file.type,
       }))
