@@ -23,11 +23,10 @@ const Browse = () => {
   const params = useParams()
   const { '*': path } = params
   const breadcrumbs = splitPath(path)
-  const refinedPath = `${path.replace(/-/g, '').replace(/\s+/g, '')}`
-
+  const refinedPath = `/${path}`
   const fileQuery = useGetFilePath('browse-files', refinedPath)
-  const folderQuery = useGetPath('browse-folder', `/${refinedPath}`)
-  // console.log('folderQuery:', folderQuery.data)
+  const folderQuery = useGetPath('browse-folder', refinedPath)
+
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleCreateFolder = (e) => {
