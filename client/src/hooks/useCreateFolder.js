@@ -5,7 +5,6 @@ export function createCompanyFolder() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (data) => {
-      // console.log(data)
       const res = await apiClient.post('/folders', data)
       return res.data
     },
@@ -16,7 +15,6 @@ export function createCompanyFolder() {
           return [...oldData, data.data]
         },
       )
-      // console.log(data.data.folderPath.replace('root', '/'))
     },
   })
 }

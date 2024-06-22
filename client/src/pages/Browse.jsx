@@ -13,14 +13,10 @@ import Folder from '../components/browse/Folder'
 import Spinner from '../components/utility/Spinner'
 import Modal from '../components/utility/Modal'
 import CreateDepthFolder from '../components/utility/Create/Folder/CreateDepthFolder'
+import CreateFile from '../components/utility/Create/File/CreateFile'
 
 //Hooks
 import { useGetFilePath, useGetPath } from '../hooks/useGetPath'
-
-const uploadFiles = async (files) => {
-  console.log('Uploading files:', files)
-  return new Promise((resolve) => setTimeout(() => resolve(files), 1000))
-}
 
 const Browse = () => {
   const queryClient = useQueryClient()
@@ -30,7 +26,7 @@ const Browse = () => {
   const refinedPath = `/${path.replace(/-/g, '').replace(/\s+/g, '')}`
   const fileQuery = useGetFilePath('browse-files', refinedPath)
   const folderQuery = useGetPath('browse-folder', refinedPath)
-
+  // console.log('folderQuery:', folderQuery.data)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleCreateFolder = (e) => {
@@ -40,32 +36,6 @@ const Browse = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false)
   }
-
-  const newFilesMutation = useMutation({
-    mutationFn: uploadFiles,
-    onSuccess: (newFiles) => {
-      queryClient.setQueryData(['files'], (oldFiles) => [...oldFiles, ...newFiles])
-    },
-  })
-
-  const onDrop = useCallback(
-    async (acceptedFiles) => {
-      const newFilesPromises = acceptedFiles.map(async (file) => ({
-        id: nanoid(),
-        name: file.name,
-        type: 'file',
-        file: await fileToBase64(file),
-        extension: file.name.split('.').pop(),
-      }))
-
-      const newFiles = await Promise.all(newFilesPromises)
-
-      newFilesMutation.mutate(newFiles)
-    },
-    [newFilesMutation],
-  )
-
-  const { getRootProps, getInputProps } = useDropzone({ onDrop })
 
   if (fileQuery.isLoading && folderQuery.isLoading)
     return (
@@ -79,7 +49,6 @@ const Browse = () => {
 
   const display = mergeData(fileQuery.data, folderQuery.data)
 
-  // console.log(display)
   return (
     <>
       <div className="px-2 lg:px-24">
@@ -108,13 +77,8 @@ const Browse = () => {
           </div>
         </div>
 
-        <div
-          {...getRootProps()}
-          className="w-full border-2 border-dashed border-gray-300 rounded justify-center items-center flex cursor-pointer mb-5 bg-gray-50/50 overflow-y-auto h-24"
-        >
-          <p className="text-gray-500">Drag & drop some files here, or click to select files</p>
-          <input {...getInputProps()} />
-        </div>
+        {/* drag drop */}
+        <CreateFile />
         <div className="max-h-[41rem] overflow-y-auto scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-300">
           {display.length === 0 ? (
             <div className="flex justify-center">

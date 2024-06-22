@@ -21,16 +21,17 @@ const CreateDepthFolder = ({ closeModal }) => {
       return ['subfolder', newUrl]
     }
   }, [folderDepth, url])
+  // console.log('queryKey:', queryKey)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     const data = {
       folderName: folderName,
-      folderPath: `${url.replace('/browse', '')}`,
+      folderPath: `${url.replace('/browse/', '')}`,
       folderDepth: folderDepth,
       folderParentId: findFolderId(folderDepth, url),
     }
-    console.log(data)
+
     try {
       await create(data)
     } catch (err) {
@@ -49,8 +50,8 @@ const CreateDepthFolder = ({ closeModal }) => {
       depth === 2
         ? url.replace('/browse', '').replace('/', '').toLowerCase()
         : url.split('/').slice(-1)[0].toLowerCase()
-
     const folder = data.find((row) => row.folderName.toLowerCase() === folderNameToMatch)
+    // console.log('folder:', folder)
     return folder ? folder.folderId : ''
   }
 
