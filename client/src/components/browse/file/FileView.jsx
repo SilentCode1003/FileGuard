@@ -53,26 +53,22 @@ const FileView = ({ isOpen, onClose, children, data, isLoading }) => {
                 <h2 className="mx-auto text-xl font-bold mb-4">{data.fileName}</h2>
                 <div className="flex flex-col lg:flex-row gap-4 h-[42rem]">
                   <div className="basis-full lg:basis-8/12 text-center border p-4 rounded">
-                    <p>{data.fileName}</p>
                     {isLoading ? (
                       <Spinner size={30} />
                     ) : (
                       <embed
                         src={`${CONFIG.SERVER_URL}/files/preview/${sanitizeFilePath(data.filePath)}/${data.fileName}`}
-                        type="application/pdf"
-                        className="w-full h-full"
+                        className="w-full h-full rounded"
                       />
                     )}
                   </div>
                   <div className="basis-full lg:basis-4/12 text-center border p-4 rounded">
-                    <p>{data.fileName}</p>
                     {isLoading ? (
                       <Spinner size={30} />
                     ) : (
                       <embed
                         src={`${CONFIG.SERVER_URL}/files/preview/${sanitizeFilePath(data.filePath)}/${data.fileName}`}
-                        type="application/pdf"
-                        className="w-full h-full"
+                        className="w-full h-full rounded "
                       />
                     )}
                   </div>
