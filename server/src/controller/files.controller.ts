@@ -3,10 +3,13 @@ import type { RequestHandler } from 'express'
 import { readFileSync, writeFile } from 'fs'
 import { writeFile as asyncWriteFile } from 'fs/promises'
 import mammoth from 'mammoth'
+import pdf2img from 'pdf-img-convert'
 import PdfParse from 'pdf-parse'
+import Tesseract from 'tesseract.js'
 import * as xlsx from 'xlsx'
 import { CONFIG } from '../config/env.config.js'
 import { prisma } from '../db/prisma'
+import { nanoid } from '../util/nano.util'
 import {
   createFileSchema,
   createRevisionsSchema,
@@ -15,7 +18,10 @@ import {
   searchFilesSchema,
 } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
-import { nanoid } from '../util/nano.util'
+// import PdfParse from 'pdf-parse'
+// import mammoth from 'mammoth'
+// import * as xlsx from 'xlsx'
+// import { log } from 'console'
 
 export const getFilesByPath: RequestHandler = async (req, res) => {
   const validatedBody = getFilesByPathSchema.safeParse(req.query)
@@ -106,7 +112,11 @@ export const searchFiles: RequestHandler = async (req, res) => {
 }
 
 export const createFile: RequestHandler = async (req, res) => {
+  console.log(req.context)
+  
   const validatedBody = createFileSchema.safeParse(req.body)
+  
+
 
   if (!validatedBody.success) {
     return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
@@ -116,158 +126,186 @@ export const createFile: RequestHandler = async (req, res) => {
     files: req.body.files.map((file: any) => ({ ...file, fileUserId: req.context.user!.userId })),
   })
 
+
   if (!validatedData.success) {
     return res.status(400).json({ message: validatedData.error.errors[0]?.message })
   }
+
+  console.log(validatedData.data.files)
+  console.log(validatedBody.data.files)
+  
 
   try {
     let newFiles: Array<Omit<Files, 'fileBase'>> = []
     for (const fileData of validatedData.data.files) {
       const file = Buffer.from(fileData.file, 'base64')
 
-      await prisma.$transaction(async (prisma) => {
-        const filePath = `${CONFIG.FILE_SERVER === 'root' ? './' : ''}${CONFIG.FILE_SERVER}${fileData.filePath}/${fileData.fileName}`
+      await prisma.$transaction(
+        async (prisma) => {
+          const filePath = `${CONFIG.FILE_SERVER === 'root' ? './' : ''}${CONFIG.FILE_SERVER}${fileData.filePath}/${fileData.fileName}`
 
-        const checkFile = await prisma.files.findFirst({
-          where: {
-            AND: [
-              {
-                filePath: `${fileData.filePath}`,
-              },
-              {
-                fileName: fileData.fileName,
-              },
-            ],
-          },
-        })
-
-        if (checkFile) {
-          throw new Error('File already exists!')
-        } else {
-          const newFileId = nanoid()
-          const newFile = await prisma.files.create({
-            data: {
-              fileBase: fileData.file,
-              fileId: newFileId,
-              fileName: fileData.fileName,
-              filePath: `${fileData.filePath}`,
-              fileUserId: req.context.user.userId,
-            },
-            omit: {
-              fileBase: true,
-            },
-          })
-
-          const folderName = /[\s\w]+$/gi.exec(fileData.filePath)!
-          const folderPath = `${getFolderPath(fileData.filePath)}`
-
-          const folder = await prisma.folders.findFirst({
+          const checkFile = await prisma.files.findFirst({
             where: {
-              AND: [{ folderName: folderName[0]! }, { folderPath }],
+              AND: [
+                {
+                  filePath: `${fileData.filePath}`,
+                },
+                {
+                  fileName: fileData.fileName,
+                },
+              ],
             },
           })
 
-          if (!folder) {
-            throw new Error('Folder not found!')
-          }
-
-          const newFolderFileId = nanoid()
-
-          await prisma.folderFiles.create({
-            data: {
-              ffId: newFolderFileId,
-              ffFolderId: folder.folderId,
-              ffFileId: newFileId,
-            },
-          })
-          await asyncWriteFile(filePath, file)
-
-          let databuffer = readFileSync(filePath)
-          if (fileData.fileMimeType == 'application/pdf') {
-            const content = (await PdfParse(databuffer)).text.replaceAll(/\s+/g, '')
-
-            // const pdfArray = await convert(filePath)
-            // console.log('saving')
-            // for (let i = 0; i < pdfArray.length; i++) {
-            //   writeFile('./root/test.png', pdfArray[i]!, function (error) {
-            //     if (error) {
-            //       console.error('Error: ' + error)
-            //     }
-            //   }) //writeFile
-            // } // for
-
-            // const tworker = await Tesseract.recognize(img)
-
-            // console.log(tworker.data.text)
-
-            const newFileContentId = nanoid()
-            await prisma.fileContents.create({
+          if (checkFile) {
+            throw new Error('File already exists!')
+          } else {
+            const newFileId = nanoid()
+            const newFile = await prisma.files.create({
               data: {
-                fcId: newFileContentId,
-                fcFileId: newFileId,
-                fcContent: content,
+                fileBase: fileData.file,
+                fileId: newFileId,
+                fileName: fileData.fileName,
+                filePath: `${fileData.filePath}`,
+                fileUserId: req.context.user.userId,
+              },
+              omit: {
+                fileBase: true,
               },
             })
 
-            console.log(`this file is a pdf file: ${fileData.fileName}`)
-          }
+            const folderName = /[\s\w]+$/gi.exec(fileData.filePath)!
+            const folderPath = `${getFolderPath(fileData.filePath)}`
 
-          if (
-            fileData.fileMimeType ===
-              'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-            fileData.fileMimeType === 'application/msword'
-          ) {
-            const data = await mammoth.extractRawText({
-              path: filePath,
-            })
-            const content = data.value.replaceAll(/\s+/g, '')
-
-            const newFileContentId = nanoid()
-            await prisma.fileContents.create({
-              data: {
-                fcId: newFileContentId,
-                fcFileId: newFileId,
-                fcContent: content,
+            const folder = await prisma.folders.findFirst({
+              where: {
+                AND: [{ folderName: folderName[0]! }, { folderPath }],
               },
             })
 
-            console.log(`this file is a word file: ${fileData.fileName}`)
-          }
-
-          if (
-            fileData.fileMimeType ==
-              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-            fileData.fileMimeType == 'application/vnd.ms-excel' ||
-            fileData.fileMimeType == 'application/vnd.oasis.opendocument.spreadsheet'
-          ) {
-            const data = xlsx.read(databuffer, { type: 'buffer' })
-
-            const content: Array<string> = []
-            for (let i = 0; i < data.SheetNames.length; i++) {
-              const sheet = data.Sheets[data.SheetNames[i]!]
-              const text = xlsx.utils.sheet_to_txt(sheet!)
-
-              content.push(text.replace(/\s+/g, ''))
+            if (!folder) {
+              throw new Error('Folder not found!')
             }
 
-            const newFileContentId = nanoid()
-            await prisma.fileContents.create({
+            const newFolderFileId = nanoid()
+
+            await prisma.folderFiles.create({
               data: {
-                fcId: newFileContentId,
-                fcFileId: newFileId,
-                fcContent: content.join('\n'),
+                ffId: newFolderFileId,
+                ffFolderId: folder.folderId,
+                ffFileId: newFileId,
               },
             })
+            await asyncWriteFile(filePath, file)
 
-            console.log(`this file is an excel file: ${fileData.fileName}`)
+            let databuffer = readFileSync(filePath)
+            if (fileData.fileMimeType == 'application/pdf') {
+              const content = (await PdfParse(databuffer)).text.replaceAll(/\s+/g, '')
+
+              if (content === '') {
+                // If the content is empty, we assume that the file only contains images
+                let ocrContent = ''
+
+                const worker = await Tesseract.createWorker('eng', 1)
+                const outputImages = await pdf2img.convert(
+                  'https://css4.pub/2015/icelandic/dictionary.pdf',
+                  { scale: 2 },
+                )
+
+                for (const page of outputImages) {
+                  if (page instanceof Uint8Array) {
+                    const data = await worker.recognize(page)
+                    ocrContent += data.data.text
+                    console.log(data.data.text)
+                  }
+                }
+
+                await worker.terminate()
+
+                const newFileContentId = nanoid()
+                await prisma.fileContents.create({
+                  data: {
+                    fcId: newFileContentId,
+                    fcFileId: newFileId,
+                    fcContent: ocrContent,
+                  },
+                })
+              } else {
+                // If the content is not empty, we assume that the file contains a combination of text and images. We will however, not use OCR on the images
+
+                const newFileContentId = nanoid()
+                await prisma.fileContents.create({
+                  data: {
+                    fcId: newFileContentId,
+                    fcFileId: newFileId,
+                    fcContent: content,
+                  },
+                })
+
+                console.log(`this file is a pdf file: ${fileData.fileName}`)
+              }
+            }
+
+            if (
+              fileData.fileMimeType ===
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+              fileData.fileMimeType === 'application/msword'
+            ) {
+              const data = await mammoth.extractRawText({
+                path: filePath,
+              })
+              const content = data.value.replaceAll(/\s+/g, '')
+
+              const newFileContentId = nanoid()
+              await prisma.fileContents.create({
+                data: {
+                  fcId: newFileContentId,
+                  fcFileId: newFileId,
+                  fcContent: content,
+                },
+              })
+
+              console.log(`this file is a word file: ${fileData.fileName}`)
+            }
+
+            if (
+              fileData.fileMimeType ==
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+              fileData.fileMimeType == 'application/vnd.ms-excel' ||
+              fileData.fileMimeType == 'application/vnd.oasis.opendocument.spreadsheet'
+            ) {
+              const data = xlsx.read(databuffer, { type: 'buffer' })
+
+              const content: Array<string> = []
+              for (let i = 0; i < data.SheetNames.length; i++) {
+                const sheet = data.Sheets[data.SheetNames[i]!]
+                const text = xlsx.utils.sheet_to_txt(sheet!)
+
+                content.push(text.replace(/\s+/g, ''))
+              }
+
+              const newFileContentId = nanoid()
+              await prisma.fileContents.create({
+                data: {
+                  fcId: newFileContentId,
+                  fcFileId: newFileId,
+                  fcContent: content.join('\n'),
+                },
+              })
+
+              console.log(`this file is an excel file: ${fileData.fileName}`)
+            }
+
+            newFiles.push(newFile)
           }
-
-          newFiles.push(newFile)
-        }
-      })
+        },
+        { maxWait: 3000 },
+      )
     }
     return res.status(200).json({ data: newFiles })
   } catch (error) {
+    console.log(error)
+    
     if (error instanceof Error) {
       console.log(error.message)
       res.statusMessage = error.message
