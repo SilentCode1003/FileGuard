@@ -3,14 +3,16 @@ import { FaArrowLeft } from 'react-icons/fa'
 import { FiDownload } from 'react-icons/fi'
 import { MdOutlineDriveFileRenameOutline, MdDeleteOutline } from 'react-icons/md'
 import { motion, AnimatePresence } from 'framer-motion'
+import { CONFIG } from '../../../config/env'
+import { sanitizeFilePath } from '../../../utiliy/utility'
+import Spinner from '../../utility/Spinner'
 
-const FileView = ({ isOpen, onClose, children }) => {
+const FileView = ({ isOpen, onClose, children, data, isLoading }) => {
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose()
     }
   }
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -45,7 +47,38 @@ const FileView = ({ isOpen, onClose, children }) => {
                 <FaArrowLeft />
               </button>
             </div>
-            <div>{children}</div>
+            <div>
+              {' '}
+              <div className="flex flex-col justify-between">
+                <h2 className="mx-auto text-xl font-bold mb-4">{data.fileName}</h2>
+                <div className="flex flex-col lg:flex-row gap-4 h-[42rem]">
+                  <div className="basis-full lg:basis-8/12 text-center border p-4 rounded">
+                    <p>{data.fileName}</p>
+                    {isLoading ? (
+                      <Spinner size={30} />
+                    ) : (
+                      <embed
+                        src={`${CONFIG.SERVER_URL}/files/preview/${sanitizeFilePath(data.filePath)}/${data.fileName}`}
+                        type="application/pdf"
+                        className="w-full h-full"
+                      />
+                    )}
+                  </div>
+                  <div className="basis-full lg:basis-4/12 text-center border p-4 rounded">
+                    <p>{data.fileName}</p>
+                    {isLoading ? (
+                      <Spinner size={30} />
+                    ) : (
+                      <embed
+                        src={`${CONFIG.SERVER_URL}/files/preview/${sanitizeFilePath(data.filePath)}/${data.fileName}`}
+                        type="application/pdf"
+                        className="w-full h-full"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </motion.div>
       )}

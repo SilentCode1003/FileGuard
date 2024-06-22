@@ -10,17 +10,22 @@ import Dropdown from '../../utility/dropdown/Dropdown'
 import DropdownItem from '../../utility/dropdown/DropdownItem'
 import FileIcon from '../../utility/FileIcon'
 import FileView from './FileView'
-import Spinner from '../../utility/Spinner'
 
 const File = ({ file }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
-
   const handleViewFile = (e) => {
+    e.preventDefault()
     setIsModalOpen(true)
   }
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
+  }
+
+  const newData = {
+    fileName: file.name,
+    filePath: file.path,
+    fileId: file.id,
   }
 
   return (
@@ -40,21 +45,7 @@ const File = ({ file }) => {
           <DropdownItem Icon={MdDeleteOutline}>Delete</DropdownItem>
         </Dropdown>
       </div>
-      <FileView isOpen={isModalOpen} onClose={handleCloseModal}>
-        <div className="flex flex-col justify-between">
-          <h2 className="mx-auto text-xl font-bold mb-4">{file.name}</h2>
-          <div className="flex flex-col lg:flex-row gap-4 h-[42rem]">
-            <div className="basis-full lg:basis-8/12 text-center border p-4 rounded">
-              <p>{file.name}</p>
-              <Spinner size={30} />
-            </div>
-            <div className="basis-full lg:basis-4/12 text-center border p-4 rounded">
-              <p>{file.name}</p>
-              <Spinner size={30} />
-            </div>
-          </div>
-        </div>
-      </FileView>
+      {newData && <FileView isOpen={isModalOpen} onClose={handleCloseModal} data={newData} />}
     </div>
   )
 }
