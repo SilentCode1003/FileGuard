@@ -61,5 +61,5 @@ export const advancedSearchSchema = z.object({
   department: z.string().optional(),
   fromDate: z.string().date().optional(),
   toDate: z.string().date().optional(),
-  keyword: z.string().optional(),
+  keyword: z.string(),
 })
