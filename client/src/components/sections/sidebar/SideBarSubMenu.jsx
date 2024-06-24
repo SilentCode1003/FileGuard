@@ -39,7 +39,7 @@ const SideBarSubMenu = ({ data, currentPath = '' }) => {
   const hasSubMenus = submenuData.length > 0
 
   const path = submenuData.map((folder) => ({
-    name: folder.folderName.replace(/([a-z])([A-Z])/g, '$1 $2'),
+    name: folder.folderName,
     id: folder.folderId,
     depth: folder.folderDepth,
   }))
