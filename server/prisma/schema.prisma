@@ -55,6 +55,7 @@ model Files {
   fileFolderId String       @map("file_folder_id") @db.VarChar(100)
   folder        Folders        @relation(fields: [fileFolderId], references: [folderId])
   fileCreatedAt    DateTime       @map("file_created_at") @default(now())
+  fileIsActive     Boolean       @default(true) @map("file_is_active")
   fileContents FileContents[]
   Revisions    Revisions[]
 
@@ -69,6 +70,7 @@ model Folders {
   user           Users         @relation(fields: [folderUserId], references: [userId])
   folderDepth    Int           @map("folder_depth") @db.Int
   folderCreatedAt      DateTime     @map("folder_created_at") @default(now())
+  folderIsActive      Boolean     @default(true) @map("folder_is_active")
   permissions    Permissions[]
   files          Files[]
   revisions      Revisions[]
@@ -125,4 +127,5 @@ model Revisions {
   revCreatedAt DateTime      @map("rev_created_at") @default(now())
   revUserId    String        @map("rev_user_id") @db.VarChar(100)
   user         Users         @relation(fields: [revUserId], references: [userId])
+  revIsActive  Boolean       @default(true) @map("rev_is_active")
 }
