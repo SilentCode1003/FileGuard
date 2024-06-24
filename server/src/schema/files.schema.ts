@@ -33,6 +33,10 @@ export const getFilesByPathSchema = z.object({
   filePath: z.string().optional(),
 })
 
+export const getFilesByFolderIdSchema = z.object({
+  fileFolderId: z.string({ required_error: 'fileFolderId is required' }).nanoid(),
+})
+
 export const getRevisionsByFileIdSchema = z.object({
   revFileId: z.string({ required_error: 'fileId is required' }),
 })

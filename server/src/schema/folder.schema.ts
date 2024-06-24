@@ -19,5 +19,5 @@ export const getFoldersByPathSchema = z.object({
 })
 
 export const getFoldersByParentIdSchema = z.object({
-  folderParentId: z.string().min(1),
+  folderParentId: z.string().optional(),
 })

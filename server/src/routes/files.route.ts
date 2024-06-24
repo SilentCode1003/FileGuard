@@ -4,7 +4,7 @@ import {
   advancedSearch,
   createFile,
   createRevisions,
-  getFilesByPath,
+  getFilesByFolderId,
   getRevisionsByFileId,
   searchFiles,
 } from '../controller/files.controller'
@@ -12,7 +12,7 @@ import { previewFileAuth } from '../middlewares/previewFile.middleware'
 
 export const filesRouter = express.Router()
 
-filesRouter.get('/', getFilesByPath)
+filesRouter.get('/', getFilesByFolderId)
 
 filesRouter.get('/search-files', searchFiles)
 
