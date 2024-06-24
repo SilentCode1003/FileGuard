@@ -88,6 +88,8 @@ export const createFolder: RequestHandler = async (req, res) => {
       })
 
       if (checkFolder) {
+        if (checkFolder.folderIsActive === false)
+          throw new Error('Folder already exists but is currently inactive!')
         throw new Error('Folder already exists')
       }
 

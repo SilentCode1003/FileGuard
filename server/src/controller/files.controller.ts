@@ -107,8 +107,6 @@ export const searchFiles: RequestHandler = async (req, res) => {
 }
 
 export const createFile: RequestHandler = async (req, res) => {
-  console.log(req.context)
-
   const validatedBody = createFileSchema.safeParse(req.body)
 
   if (!validatedBody.success) {
@@ -122,9 +120,6 @@ export const createFile: RequestHandler = async (req, res) => {
   if (!validatedData.success) {
     return res.status(400).json({ message: validatedData.error.errors[0]?.message })
   }
-
-  console.log(validatedData.data.files)
-  console.log(validatedBody.data.files)
 
   try {
     let newFiles: Array<Omit<Files, 'fileBase'>> = []
@@ -149,6 +144,9 @@ export const createFile: RequestHandler = async (req, res) => {
           })
 
           if (checkFile) {
+            if (checkFile.fileIsActive === false)
+              throw new Error('File already exists but is currently inactive!')
+
             throw new Error('File already exists!')
           } else {
             const folderName = /[\s\w]+$/gi.exec(fileData.filePath)!
@@ -338,6 +336,8 @@ export const createRevisions: RequestHandler = async (req, res) => {
           },
         })
         if (checkRevision) {
+          if (checkRevision.revIsActive)
+            throw new Error('Revision already exists but is currently inactive!')
           throw new Error('Revision already exists!')
         } else {
           writeFile(filePath, file, (err) => {
@@ -444,6 +444,8 @@ export const uploadFile: RequestHandler = async (req, res) => {
         })
 
         if (checkRev) {
+          if (checkRev.revIsActive === false)
+            throw new Error('Revision already exists but is currently inactive!')
           throw new Error('Revision already exists!')
         }
 
@@ -509,6 +511,8 @@ export const uploadFile: RequestHandler = async (req, res) => {
           })
 
           if (checkFile) {
+            if (checkFile.fileIsActive === false)
+              throw new Error('File already exists but is currently inactive!')
             throw new Error('File already exists!')
           }
 
@@ -647,7 +651,7 @@ export const advancedSearch: RequestHandler = async (req, res) => {
             : {},
           validatedQueryParams.data.fromDate && validatedQueryParams.data.toDate
             ? {
-                createdAt: {
+                fileCreatedAt: {
                   gte: new Date(validatedQueryParams.data.fromDate),
                   lte: new Date(validatedQueryParams.data.toDate),
                 },
