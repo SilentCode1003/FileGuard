@@ -10,7 +10,7 @@ const CreateCompanyFolder = ({ closeModal }) => {
     const data = {
       folderName: folderName,
       folderPath: `/`,
-      folderDepth: 1,
+      folderDepth: 0,
     }
 
     try {

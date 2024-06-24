@@ -1,8 +1,14 @@
 import express from 'express'
-import { createFolder, getFolders } from '../controller/folder.controller'
+import {
+  createFolder,
+  getFoldersByParentId,
+  //   getFoldersByPath,
+} from '../controller/folder.controller'
 
 export const foldersRouter = express.Router()
 
-foldersRouter.get('/', getFolders)
+// foldersRouter.get('/', getFoldersByPath)
+
+foldersRouter.get('/', getFoldersByParentId)
 
 foldersRouter.post('/', createFolder)

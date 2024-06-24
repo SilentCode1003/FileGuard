@@ -52,10 +52,13 @@ model Files {
   fileName     String         @map("file_name") @db.Text
   filePath     String         @map("file_path") @db.Text
   fileBase     String         @map("file_base") @db.LongText
-  createdAt    DateTime       @default(now())
-  folderFiles  FolderFiles[]
+  fileFolderId String       @map("file_folder_id") @db.VarChar(100)
+  folder        Folders        @relation(fields: [fileFolderId], references: [folderId])
+  fileCreatedAt    DateTime       @map("file_created_at") @default(now())
+  fileIsActive     Boolean       @default(true) @map("file_is_active")
   fileContents FileContents[]
   Revisions    Revisions[]
+
 }
 
 model Folders {
@@ -66,20 +69,13 @@ model Folders {
   folderUserId   String        @map("folder_user_id") @db.VarChar(100)
   user           Users         @relation(fields: [folderUserId], references: [userId])
   folderDepth    Int           @map("folder_depth") @db.Int
-  createdAt      DateTime      @default(now())
-  folderFiles    FolderFiles[]
+  folderCreatedAt      DateTime     @map("folder_created_at") @default(now())
+  folderIsActive      Boolean     @default(true) @map("folder_is_active")
   permissions    Permissions[]
+  files          Files[]
+  revisions      Revisions[]
 }
 
-model FolderFiles {
-  ffId       String    @id @map("ff_id") @db.VarChar(100)
-  ffFolderId String    @map("ff_folder_id") @db.VarChar(100)
-  folders    Folders   @relation(fields: [ffFolderId], references: [folderId], onDelete: Cascade)
-  ffFileId   String?    @map("ff_file_id") @db.VarChar(100)
-  files      Files?     @relation(fields: [ffFileId], references: [fileId], onDelete: Cascade)
-  ffRevId    String?    @map("ff_rev_id") @db.VarChar(100)
-  revisions  Revisions? @relation(fields: [ffRevId], references: [revId], onDelete: Cascade)
-}
 
 model Companies {
   compId             String               @id @map("comp_id") @db.VarChar(100)
@@ -109,7 +105,7 @@ model UserLogs {
   ulUserId      String   @map("ul_user_id") @db.VarChar(100)
   user          Users    @relation(fields: [ulUserId], references: [userId])
   ulDescription String   @map("ul_description") @db.Text
-  createdAt     DateTime @default(now())
+  userCreatedAt     DateTime @map("ul_created_at") @default(now())
 }
 
 model FileContents {
@@ -126,8 +122,10 @@ model Revisions {
   revFileName  String        @map("rev_file_name") @db.Text
   revFilePath  String        @map("rev_file_path") @db.Text
   revFileBase  String        @map("rev_file_base") @db.LongText
-  revCreatedAt DateTime      @default(now())
+  revFileFolderId String    @map("rev_file_folder_id") @db.VarChar(100)
+  folder        Folders        @relation(fields: [revFileFolderId], references: [folderId])
+  revCreatedAt DateTime      @map("rev_created_at") @default(now())
   revUserId    String        @map("rev_user_id") @db.VarChar(100)
   user         Users         @relation(fields: [revUserId], references: [userId])
-  FolderFiles  FolderFiles[]
+  revIsActive  Boolean       @default(true) @map("rev_is_active")
 }

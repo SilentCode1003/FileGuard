@@ -12,7 +12,7 @@ const CreateDepthFolder = ({ closeModal }) => {
   const folderDepth = calculateDepth(url)
 
   const queryKey = useMemo(() => {
-    if (folderDepth === 2) {
+    if (folderDepth === 1) {
       return ['folders', '/']
     } else {
       const parts = url.split('/')

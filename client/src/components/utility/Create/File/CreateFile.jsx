@@ -24,7 +24,7 @@ const CreateFile = () => {
       const newObject = {
         files: newFiles,
       }
-      if (folderDepth > 4) {
+      if (folderDepth > 3) {
         try {
           await create(newObject)
         } catch (err) {

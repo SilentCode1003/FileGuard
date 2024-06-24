@@ -57,7 +57,7 @@ export function mergeData(files, folders) {
 
 export function calculateDepth(pathname) {
   const segments = pathname.split('/').filter((segment) => segment !== '')
-  return segments.length
+  return segments.length - 1
 }
 
 export function sanitizeFilePath(filePath) {
