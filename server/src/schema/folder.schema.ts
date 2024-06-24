@@ -14,6 +14,10 @@ export const createFolderSchema = z.object({
   folderDepth: z.number({ required_error: 'folderDepth is required' }),
 })
 
-export const getFoldersSchema = z.object({
+export const getFoldersByPathSchema = z.object({
   folderPath: z.string().min(1),
+})
+
+export const getFoldersByParentIdSchema = z.object({
+  folderParentId: z.string().min(1),
 })

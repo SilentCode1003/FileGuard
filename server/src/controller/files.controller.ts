@@ -107,8 +107,6 @@ export const searchFiles: RequestHandler = async (req, res) => {
 }
 
 export const createFile: RequestHandler = async (req, res) => {
-  console.log(req.context)
-
   const validatedBody = createFileSchema.safeParse(req.body)
 
   if (!validatedBody.success) {
@@ -122,9 +120,6 @@ export const createFile: RequestHandler = async (req, res) => {
   if (!validatedData.success) {
     return res.status(400).json({ message: validatedData.error.errors[0]?.message })
   }
-
-  console.log(validatedData.data.files)
-  console.log(validatedBody.data.files)
 
   try {
     let newFiles: Array<Omit<Files, 'fileBase'>> = []
@@ -149,22 +144,11 @@ export const createFile: RequestHandler = async (req, res) => {
           })
 
           if (checkFile) {
+            if (checkFile.fileIsActive === false)
+              throw new Error('File already exists but is currently inactive!')
+
             throw new Error('File already exists!')
           } else {
-            const newFileId = nanoid()
-            const newFile = await prisma.files.create({
-              data: {
-                fileBase: fileData.file,
-                fileId: newFileId,
-                fileName: fileData.fileName,
-                filePath: `${fileData.filePath}`,
-                fileUserId: req.context.user.userId,
-              },
-              omit: {
-                fileBase: true,
-              },
-            })
-
             const folderName = /[\s\w]+$/gi.exec(fileData.filePath)!
             const folderPath = `${getFolderPath(fileData.filePath)}`
 
@@ -178,15 +162,21 @@ export const createFile: RequestHandler = async (req, res) => {
               throw new Error('Folder not found!')
             }
 
-            const newFolderFileId = nanoid()
-
-            await prisma.folderFiles.create({
+            const newFileId = nanoid()
+            const newFile = await prisma.files.create({
               data: {
-                ffId: newFolderFileId,
-                ffFolderId: folder.folderId,
-                ffFileId: newFileId,
+                fileBase: fileData.file,
+                fileId: newFileId,
+                fileFolderId: fileData.fileFolderId,
+                fileName: fileData.fileName,
+                filePath: `${fileData.filePath}`,
+                fileUserId: req.context.user.userId,
+              },
+              omit: {
+                fileBase: true,
               },
             })
+
             await asyncWriteFile(filePath, file)
 
             let databuffer = readFileSync(filePath)
@@ -346,26 +336,13 @@ export const createRevisions: RequestHandler = async (req, res) => {
           },
         })
         if (checkRevision) {
+          if (checkRevision.revIsActive)
+            throw new Error('Revision already exists but is currently inactive!')
           throw new Error('Revision already exists!')
         } else {
           writeFile(filePath, file, (err) => {
             if (err) throw err
             console.log('The Revision file has been saved!')
-          })
-
-          const newRevId = nanoid()
-          const newRevision = await prisma.revisions.create({
-            data: {
-              revFileBase: fileData.revFile,
-              revFileId: fileData.revFileId,
-              revFileName: fileData.revFileName,
-              revFilePath: `${fileData.revFilePath}`,
-              revUserId: req.context.user.userId,
-              revId: newRevId,
-            },
-            omit: {
-              revFileBase: true,
-            },
           })
 
           const folderName = /[\s\w]+$/gi.exec(fileData.revFilePath)!
@@ -381,13 +358,19 @@ export const createRevisions: RequestHandler = async (req, res) => {
             throw new Error('Folder not found!')
           }
 
-          const newFolderFileId = nanoid()
-
-          await prisma.folderFiles.create({
+          const newRevId = nanoid()
+          const newRevision = await prisma.revisions.create({
             data: {
-              ffId: newFolderFileId,
-              ffFolderId: folder.folderId,
-              ffRevId: newRevId,
+              revFileBase: fileData.revFile,
+              revFileId: fileData.revFileId,
+              revFileFolderId: fileData.revFileFolderId,
+              revFileName: fileData.revFileName,
+              revFilePath: `${fileData.revFilePath}`,
+              revUserId: req.context.user.userId,
+              revId: newRevId,
+            },
+            omit: {
+              revFileBase: true,
             },
           })
 
@@ -461,6 +444,8 @@ export const uploadFile: RequestHandler = async (req, res) => {
         })
 
         if (checkRev) {
+          if (checkRev.revIsActive === false)
+            throw new Error('Revision already exists but is currently inactive!')
           throw new Error('Revision already exists!')
         }
 
@@ -484,6 +469,7 @@ export const uploadFile: RequestHandler = async (req, res) => {
           data: {
             revFileBase: filecontent,
             revFileId: checkFile.fileId,
+            revFileFolderId: checkFile.fileFolderId,
             revFileName,
             revFilePath: documentTypeFolder,
             revUserId: userId,
@@ -491,16 +477,6 @@ export const uploadFile: RequestHandler = async (req, res) => {
           },
           omit: {
             revFileBase: true,
-          },
-        })
-
-        //create new folder file
-        const newFolderFileId = nanoid()
-        await prisma.folderFiles.create({
-          data: {
-            ffId: newFolderFileId,
-            ffFolderId: folder.folderId,
-            ffRevId: newRevId,
           },
         })
 
@@ -535,6 +511,8 @@ export const uploadFile: RequestHandler = async (req, res) => {
           })
 
           if (checkFile) {
+            if (checkFile.fileIsActive === false)
+              throw new Error('File already exists but is currently inactive!')
             throw new Error('File already exists!')
           }
 
@@ -556,20 +534,12 @@ export const uploadFile: RequestHandler = async (req, res) => {
               fileBase: filecontent,
               fileId: newFileId,
               fileName: filename,
+              fileFolderId: folder.folderId,
               filePath: documentTypeFolder,
               fileUserId: userId,
             },
             omit: {
               fileBase: true,
-            },
-          })
-
-          const newFolderFileId = nanoid()
-          await prisma.folderFiles.create({
-            data: {
-              ffId: newFolderFileId,
-              ffFolderId: folder.folderId,
-              ffFileId: newFileId,
             },
           })
 
@@ -681,7 +651,7 @@ export const advancedSearch: RequestHandler = async (req, res) => {
             : {},
           validatedQueryParams.data.fromDate && validatedQueryParams.data.toDate
             ? {
-                createdAt: {
+                fileCreatedAt: {
                   gte: new Date(validatedQueryParams.data.fromDate),
                   lte: new Date(validatedQueryParams.data.toDate),
                 },
