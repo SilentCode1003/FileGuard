@@ -54,7 +54,7 @@ model Files {
   fileBase     String         @map("file_base") @db.LongText
   fileFolderId String       @map("file_folder_id") @db.VarChar(100)
   folder        Folders        @relation(fields: [fileFolderId], references: [folderId])
-  createdAt    DateTime       @default(now())
+  fileCreatedAt    DateTime       @map("file_created_at") @default(now())
   fileContents FileContents[]
   Revisions    Revisions[]
 
@@ -68,7 +68,7 @@ model Folders {
   folderUserId   String        @map("folder_user_id") @db.VarChar(100)
   user           Users         @relation(fields: [folderUserId], references: [userId])
   folderDepth    Int           @map("folder_depth") @db.Int
-  createdAt      DateTime      @default(now())
+  folderCreatedAt      DateTime     @map("folder_created_at") @default(now())
   permissions    Permissions[]
   files          Files[]
   revisions      Revisions[]
@@ -103,7 +103,7 @@ model UserLogs {
   ulUserId      String   @map("ul_user_id") @db.VarChar(100)
   user          Users    @relation(fields: [ulUserId], references: [userId])
   ulDescription String   @map("ul_description") @db.Text
-  createdAt     DateTime @default(now())
+  userCreatedAt     DateTime @map("ul_created_at") @default(now())
 }
 
 model FileContents {
@@ -122,7 +122,7 @@ model Revisions {
   revFileBase  String        @map("rev_file_base") @db.LongText
   revFileFolderId String    @map("rev_file_folder_id") @db.VarChar(100)
   folder        Folders        @relation(fields: [revFileFolderId], references: [folderId])
-  revCreatedAt DateTime      @default(now())
+  revCreatedAt DateTime      @map("rev_created_at") @default(now())
   revUserId    String        @map("rev_user_id") @db.VarChar(100)
   user         Users         @relation(fields: [revUserId], references: [userId])
 }
