@@ -42,7 +42,7 @@ export const getFoldersByParentId: RequestHandler = async (req, res) => {
   try {
     const folders = await prisma.folders.findMany({
       where: {
-        folderParentId: validatedBody.data.folderParentId,
+        folderParentId: validatedBody.data.folderParentId ?? null,
       },
     })
     return res.status(200).json({ data: folders })

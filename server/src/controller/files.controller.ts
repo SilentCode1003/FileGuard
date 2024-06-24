@@ -11,6 +11,7 @@ import {
   advancedSearchSchema,
   createFileSchema,
   createRevisionsSchema,
+  getFilesByFolderIdSchema,
   getFilesByPathSchema,
   getRevisionsByFileIdSchema,
   searchFilesSchema,
@@ -37,6 +38,36 @@ export const getFilesByPath: RequestHandler = async (req, res) => {
     const files = await prisma.files.findMany({
       where: {
         filePath: `/${validatedBody.data.filePath === '/' ? '' : validatedBody.data.filePath}`,
+      },
+      omit: {
+        fileBase: true,
+      },
+    })
+    return res.status(200).json({ data: files })
+  } catch (error) {
+    return res.status(500).json({ message: error })
+  }
+}
+
+export const getFilesByFolderId: RequestHandler = async (req, res) => {
+  const validatedBody = getFilesByFolderIdSchema.safeParse(req.query)
+
+  if (!validatedBody.success) {
+    return res.status(400).json({ message: validatedBody.error.errors })
+  }
+
+  try {
+    if (!validatedBody.data.fileFolderId) {
+      const files = await prisma.files.findMany({
+        omit: {
+          fileBase: true,
+        },
+      })
+      return res.status(200).json({ data: files })
+    }
+    const files = await prisma.files.findMany({
+      where: {
+        fileFolderId: validatedBody.data.fileFolderId,
       },
       omit: {
         fileBase: true,
