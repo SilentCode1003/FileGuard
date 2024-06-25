@@ -15,67 +15,67 @@ datasource db {
 }
 
 model Permissions {
-  permId       String    @id @map("perm_id") @db.VarChar(100)
-  permUrId     String    @map("perm_ur_id") @db.VarChar(100)
-  userRoles    UserRoles @relation(fields: [permUrId], references: [urId])
-  permFolderId String    @map("perm_folder_id") @db.VarChar(100)
-  folder       Folders   @relation(fields: [permFolderId], references: [folderId])
-  permIsActive Boolean   @default(true) @map("perm_is_active")
+  permId       String  @id @map("perm_id") @db.VarChar(100)
+  permUserId   String  @map("perm_ur_id") @db.VarChar(100)
+  user         Users   @relation(fields: [permUserId], references: [userId])
+  permFolderId String  @map("perm_folder_id") @db.VarChar(100)
+  folder       Folders @relation(fields: [permFolderId], references: [folderId])
+  permIsActive Boolean @default(true) @map("perm_is_active")
 }
 
 model UserRoles {
-  urId        String        @id @map("ur_id") @db.VarChar(100)
-  urName      String        @unique @map("ur_name") @db.VarChar(60)
-  urIsActive  Boolean       @default(true) @map("ur_is_active")
-  permissions Permissions[]
-  users       Users[]
+  urId       String  @id @map("ur_id") @db.VarChar(100)
+  urName     String  @unique @map("ur_name") @db.VarChar(60)
+  urIsActive Boolean @default(true) @map("ur_is_active")
+  users      Users[]
 }
 
 model Users {
-  userId       String      @id @map("user_id") @db.VarChar(100)
-  userFullname String      @map("user_fullname") @db.VarChar(60)
-  userUsername String      @unique @map("user_username") @db.VarChar(60)
-  userPassword String      @map("user_password") @db.VarChar(60)
-  userRoleId   String      @map("user_role_id") @db.VarChar(60)
-  role         UserRoles   @relation(fields: [userRoleId], references: [urId])
-  userIsActive Boolean     @default(true) @map("user_is_active")
+  userId       String        @id @map("user_id") @db.VarChar(100)
+  userFullname String        @map("user_fullname") @db.VarChar(60)
+  userUsername String        @unique @map("user_username") @db.VarChar(60)
+  userPassword String        @map("user_password") @db.VarChar(60)
+  userRoleId   String        @map("user_role_id") @db.VarChar(60)
+  role         UserRoles     @relation(fields: [userRoleId], references: [urId])
+  userIsActive Boolean       @default(true) @map("user_is_active")
   userLogs     UserLogs[]
   files        Files[]
   folders      Folders[]
   Revisions    Revisions[]
+  permissions  Permissions[]
 }
 
 model Files {
-  fileId       String         @id @map("file_id") @db.VarChar(100)
-  fileUserId   String         @map("file_user_id") @db.VarChar(100)
-  user         Users          @relation(fields: [fileUserId], references: [userId])
-  fileName     String         @map("file_name") @db.Text
-  filePath     String         @map("file_path") @db.Text
-  fileBase     String         @map("file_base") @db.LongText
-  fileFolderId String       @map("file_folder_id") @db.VarChar(100)
+  fileId        String         @id @map("file_id") @db.VarChar(100)
+  fileUserId    String         @map("file_user_id") @db.VarChar(100)
+  user          Users          @relation(fields: [fileUserId], references: [userId])
+  fileName      String         @map("file_name") @db.Text
+  filePath      String         @map("file_path") @db.Text
+  fileBase      String         @map("file_base") @db.LongText
+  fileFolderId  String         @map("file_folder_id") @db.VarChar(100)
   folder        Folders        @relation(fields: [fileFolderId], references: [folderId])
-  fileCreatedAt    DateTime       @map("file_created_at") @default(now())
-  fileIsActive     Boolean       @default(true) @map("file_is_active")
-  fileContents FileContents[]
-  Revisions    Revisions[]
-
+  fileCreatedAt DateTime       @default(now()) @map("file_created_at")
+  fileIsActive  Boolean        @default(true) @map("file_is_active")
+  fileContents  FileContents[]
+  Revisions     Revisions[]
 }
 
 model Folders {
-  folderId       String        @id @map("folder_id") @db.VarChar(100)
-  folderName     String        @map("folder_name") @db.Text
-  folderPath     String        @map("folder_path") @db.Text
-  folderParentId String?       @map("folder_parent_id") @db.VarChar(100)
-  folderUserId   String        @map("folder_user_id") @db.VarChar(100)
-  user           Users         @relation(fields: [folderUserId], references: [userId])
-  folderDepth    Int           @map("folder_depth") @db.Int
-  folderCreatedAt      DateTime     @map("folder_created_at") @default(now())
-  folderIsActive      Boolean     @default(true) @map("folder_is_active")
-  permissions    Permissions[]
-  files          Files[]
-  revisions      Revisions[]
+  folderId        String        @id @map("folder_id") @db.VarChar(100)
+  folderName      String        @map("folder_name") @db.Text
+  folderPath      String        @map("folder_path") @db.Text
+  folderParentId  String?       @map("folder_parent_id") @db.VarChar(100)
+  folderUserId    String        @map("folder_user_id") @db.VarChar(100)
+  user            Users         @relation(fields: [folderUserId], references: [userId])
+  folderDepth     Int           @map("folder_depth") @db.Int
+  folderCreatedAt DateTime      @default(now()) @map("folder_created_at")
+  folderIsActive  Boolean       @default(true) @map("folder_is_active")
+  permissions     Permissions[]
+  files           Files[]
+  revisions       Revisions[]
+  folders         Folders[]     @relation("FoldersToFolders")
+  folder          Folders?      @relation("FoldersToFolders", fields: [folderParentId], references: [folderId])
 }
-
 
 model Companies {
   compId             String               @id @map("comp_id") @db.VarChar(100)
@@ -105,7 +105,7 @@ model UserLogs {
   ulUserId      String   @map("ul_user_id") @db.VarChar(100)
   user          Users    @relation(fields: [ulUserId], references: [userId])
   ulDescription String   @map("ul_description") @db.Text
-  userCreatedAt     DateTime @map("ul_created_at") @default(now())
+  userCreatedAt DateTime @default(now()) @map("ul_created_at")
 }
 
 model FileContents {
@@ -116,16 +116,16 @@ model FileContents {
 }
 
 model Revisions {
-  revId        String        @id @map("rev_id") @db.VarChar(100)
-  revFileId    String        @map("rev_file_id") @db.VarChar(100)
-  file         Files         @relation(fields: [revFileId], references: [fileId])
-  revFileName  String        @map("rev_file_name") @db.Text
-  revFilePath  String        @map("rev_file_path") @db.Text
-  revFileBase  String        @map("rev_file_base") @db.LongText
-  revFileFolderId String    @map("rev_file_folder_id") @db.VarChar(100)
-  folder        Folders        @relation(fields: [revFileFolderId], references: [folderId])
-  revCreatedAt DateTime      @map("rev_created_at") @default(now())
-  revUserId    String        @map("rev_user_id") @db.VarChar(100)
-  user         Users         @relation(fields: [revUserId], references: [userId])
-  revIsActive  Boolean       @default(true) @map("rev_is_active")
+  revId           String   @id @map("rev_id") @db.VarChar(100)
+  revFileId       String   @map("rev_file_id") @db.VarChar(100)
+  file            Files    @relation(fields: [revFileId], references: [fileId])
+  revFileName     String   @map("rev_file_name") @db.Text
+  revFilePath     String   @map("rev_file_path") @db.Text
+  revFileBase     String   @map("rev_file_base") @db.LongText
+  revFileFolderId String   @map("rev_file_folder_id") @db.VarChar(100)
+  folder          Folders  @relation(fields: [revFileFolderId], references: [folderId])
+  revCreatedAt    DateTime @default(now()) @map("rev_created_at")
+  revUserId       String   @map("rev_user_id") @db.VarChar(100)
+  user            Users    @relation(fields: [revUserId], references: [userId])
+  revIsActive     Boolean  @default(true) @map("rev_is_active")
 }
