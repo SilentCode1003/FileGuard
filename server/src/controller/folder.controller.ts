@@ -45,15 +45,19 @@ export const getFoldersByParentId: RequestHandler = async (req, res) => {
         folderParentId: validatedBody.data.folderParentId ?? null,
       },
     })
-    const currentFolder = await prisma.folders.findFirst({
-      where: {
-        folderId: validatedBody.data.folderParentId,
-      },
-    })
+
+    let currentFolder = null
+    if (validatedBody.data.folderParentId) {
+      currentFolder = await prisma.folders.findFirst({
+        where: {
+          folderId: validatedBody.data.folderParentId,
+        },
+      })
+    }
 
     return res.status(200).json({
       data: {
-        currentFolder: currentFolder!.folderParentId ?? null,
+        currentFolder,
         folders,
       },
     })
