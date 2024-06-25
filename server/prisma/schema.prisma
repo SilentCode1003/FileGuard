@@ -38,11 +38,9 @@ model Users {
   userRoleId   String        @map("user_role_id") @db.VarChar(60)
   role         UserRoles     @relation(fields: [userRoleId], references: [urId])
   userIsActive Boolean       @default(true) @map("user_is_active")
+  userCdId     String        @map("user_cd_id") @db.VarChar(100)
+  companyDepartment CompanyDepartments @relation(fields: [userCdId], references: [cdId])
   userLogs     UserLogs[]
-  userCompId   String        @map("user_comp_id") @db.VarChar(100)
-  comp         Companies     @relation(fields: [userCompId], references: [compId])
-  userDeptId   String        @map("user_dept_id") @db.VarChar(100)
-  dept         Departments   @relation(fields: [userDeptId], references: [deptId])
   files        Files[]
   folders      Folders[]
   Revisions    Revisions[]
@@ -86,7 +84,6 @@ model Companies {
   compName           String               @unique @map("comp_name") @db.VarChar(255)
   compIsActive       Boolean              @default(true)
   companyDepartments CompanyDepartments[]
-  Users              Users[]
 }
 
 model Departments {
@@ -94,7 +91,6 @@ model Departments {
   deptName           String               @unique @map("dept_name") @db.VarChar(255)
   deptIsActive       Boolean              @default(true)
   companyDepartments CompanyDepartments[]
-  Users              Users[]
 }
 
 model CompanyDepartments {
@@ -104,6 +100,7 @@ model CompanyDepartments {
   cdDeptId    String      @map("cd_dept_id") @db.VarChar(100)
   departments Departments @relation(fields: [cdDeptId], references: [deptId])
   cdIsActive  Boolean     @default(true)
+  users       Users[]
 }
 
 model UserLogs {
