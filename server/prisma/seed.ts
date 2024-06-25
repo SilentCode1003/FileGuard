@@ -13,12 +13,14 @@ const seedUserRole = () => {
   })
 }
 
-const seedUser = async (adminRoleId: string) => {
+const seedUser = async (adminRoleId: string, companyId: string, departmentId: string) => {
   return prisma.users.create({
     data: {
       userId: nanoid(),
       userFullname: 'John Doe',
       userPassword: await bcrypt.hash('password', 10),
+      userCompId: companyId,
+      userDeptId: departmentId,
       userUsername: 'admin',
       userIsActive: true,
       userRoleId: adminRoleId,
@@ -37,9 +39,31 @@ const seedPermissions = (adminRoleId: string) => {
   })
 }
 
+const seedCompany = async () => {
+  return prisma.companies.create({
+    data: {
+      compId: nanoid(),
+      compName: 'Company Name',
+      compIsActive: true,
+    },
+  })
+}
+
+const seedDepartment = async () => {
+  return prisma.departments.create({
+    data: {
+      deptId: nanoid(),
+      deptName: 'Department Name',
+      deptIsActive: true,
+    },
+  })
+}
+
 const main = async () => {
   const userRole = await seedUserRole()
-  await seedUser(userRole.urId)
+  const company = await seedCompany()
+  const department = await seedDepartment()
+  await seedUser(userRole.urId, company.compId, department.deptId)
 }
 
 main()
