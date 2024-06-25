@@ -1,12 +1,11 @@
-import type { Companies, Departments, UserRoles, Users } from '@prisma/client'
+import type { CompanyDepartments, UserRoles, Users } from '@prisma/client'
 
 declare module 'express-session' {
   interface SessionData {
     user: Omit<
       Users & {
         role: UserRoles
-        comp: Companies
-        dept: Departments
+        companyDepartment: CompanyDepartments
       },
       'userPassword'
     >
@@ -20,8 +19,7 @@ declare global {
         user: Omit<
           Users & {
             role: UserRoles
-            comp: Companies
-            dept: Departments
+            companyDepartment: CompanyDepartments
           },
           'userPassword'
         >

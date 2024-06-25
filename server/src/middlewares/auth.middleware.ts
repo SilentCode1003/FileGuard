@@ -30,8 +30,7 @@ export const serviceAuth: RequestHandler = async (req, res, next) => {
     },
     include: {
       role: true,
-      comp: true,
-      dept: true,
+      companyDepartment: true,
     },
   })
 
