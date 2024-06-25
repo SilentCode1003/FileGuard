@@ -15,6 +15,16 @@ export const createUserSchema = z.object({
       required_error: 'userRoleId is required',
     })
     .nanoid(),
+  userCompId: z
+    .string({
+      required_error: 'userCompId is required',
+    })
+    .nanoid(),
+  userDeptId: z
+    .string({
+      required_error: 'userDeptId is required',
+    })
+    .nanoid(),
 })
 
 export const updateUserSchema = z.object({
@@ -27,6 +37,8 @@ export const updateUserSchema = z.object({
   userUsername: z.string().optional(),
   userRoleId: z.string().nanoid().optional(),
   userPassword: z.string().optional(),
+  userCompId: z.string().nanoid().optional(),
+  userDeptId: z.string().nanoid().optional(),
 })
 
 export const toggleUserSchema = z.object({
