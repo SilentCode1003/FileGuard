@@ -99,7 +99,7 @@ export const createFolder = async (
           return {
             permId: newPermId,
             permFolderId: folder.folderId,
-            permUserId: user.userId,
+            permCdId: user.userCdId,
           }
         }),
       })

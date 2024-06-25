@@ -56,7 +56,7 @@ export const getFoldersByParentId: RequestHandler = async (req, res) => {
     }
     const permissions = await prisma.permissions.findMany({
       where: {
-        permUserId: req.context.user!.userId,
+        permCdId: req.context.user!.userCdId,
       },
     })
     return res.status(200).json({
@@ -142,7 +142,7 @@ export const createFolder: RequestHandler = async (req, res) => {
             return {
               permId: newPermId,
               permFolderId: folder.folderId,
-              permUserId: user.userId,
+              permCdId: user.userCdId,
             }
           }),
         })
