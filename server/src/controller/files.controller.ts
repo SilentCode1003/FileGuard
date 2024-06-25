@@ -518,10 +518,10 @@ export const uploadFile: RequestHandler = async (req, res) => {
       })
     } else {
       if (folders.length > 4) {
-        await createFolder(companyFolder, 0, userId)
-        await createFolder(yearOrArchive, 1, userId)
-        await createFolder(departmentFolder, 2, userId)
-        await createFolder(documentTypeFolder, 3, userId)
+        await createFolder(companyFolder, 0, userId, req.context.user)
+        await createFolder(yearOrArchive, 1, userId, req.context.user)
+        await createFolder(departmentFolder, 2, userId, req.context.user)
+        await createFolder(documentTypeFolder, 3, userId, req.context.user)
 
         await decodeBase64ToFile(filecontent, `${documentTypeFolder}/${filename}`)
 

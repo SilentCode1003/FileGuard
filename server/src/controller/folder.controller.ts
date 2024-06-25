@@ -54,11 +54,20 @@ export const getFoldersByParentId: RequestHandler = async (req, res) => {
         },
       })
     }
-
+    const permissions = await prisma.permissions.findMany({
+      where: {
+        permUserId: req.context.user!.userId,
+      },
+    })
     return res.status(200).json({
       data: {
         currentFolder,
-        folders,
+        folders:
+          req.context.user.role.urName === 'admin'
+            ? folders
+            : folders.filter((folder) =>
+                permissions.some((perm) => perm.permFolderId === folder.folderId),
+              ),
       },
     })
   } catch (error) {
@@ -117,6 +126,27 @@ export const createFolder: RequestHandler = async (req, res) => {
           folderParentId: validatedBody.data.folderParentId ?? null,
         },
       })
+
+      // Create user permissions for folder
+
+      if (req.context.user.role.urName !== 'admin') {
+        const users = await prisma.users.findMany({
+          where: {
+            companyDepartment: req.context.user.companyDepartment,
+          },
+        })
+        await prisma.permissions.createMany({
+          data: users.map((user) => {
+            const newPermId = nanoid()
+
+            return {
+              permId: newPermId,
+              permFolderId: folder.folderId,
+              permUserId: user.userId,
+            }
+          }),
+        })
+      }
 
       return res.status(200).json({ data: folder })
     })
