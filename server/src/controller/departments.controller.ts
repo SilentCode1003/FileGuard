@@ -20,16 +20,22 @@ export const createDepartment: RequestHandler = async (req, res, next) => {
   if (!validatedBody.success) {
     return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
   }
-
   try {
+    const newDeptId = nanoid()
     const department = await prisma.departments.create({
       data: {
-        ...validatedBody.data,
-        deptId: nanoid(),
+        deptName: validatedBody.data.deptName,
+        deptId: newDeptId,
+        companyDepartments: {
+          create: {
+            cdId: nanoid(),
+            cdCompId: validatedBody.data.compId,
+          },
+        },
       },
     })
 
-    res.status(200).json({ data: department })
+    return res.status(200).json({ data: department })
   } catch (err) {
     if (err instanceof PrismaClientKnownRequestError) {
       switch (err.code) {

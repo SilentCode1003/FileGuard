@@ -16,6 +16,10 @@ export const login: RequestHandler = async (req, res, next) => {
       where: {
         userUsername: validatedBody.data.username,
       },
+      include: {
+        role: true,
+        companyDepartment: true,
+      },
     })
 
     if (!user) {

@@ -1,6 +1,5 @@
 import express from 'express'
 import {
-  createCompanyDepartment,
   getAllCompanyDepartment,
   getCompanyDepartmentById,
   toggleCompanyDepartmentById,
@@ -10,8 +9,6 @@ import {
 export const companyDepartmentRouter = express.Router()
 
 companyDepartmentRouter.get('/', getAllCompanyDepartment)
-
-companyDepartmentRouter.post('/', createCompanyDepartment)
 
 companyDepartmentRouter.get('/:id', getCompanyDepartmentById)
 

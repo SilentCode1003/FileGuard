@@ -15,12 +15,14 @@ datasource db {
 }
 
 model Permissions {
-  permId       String  @id @map("perm_id") @db.VarChar(100)
-  permUserId   String  @map("perm_ur_id") @db.VarChar(100)
-  user         Users   @relation(fields: [permUserId], references: [userId])
-  permFolderId String  @map("perm_folder_id") @db.VarChar(100)
-  folder       Folders @relation(fields: [permFolderId], references: [folderId])
-  permIsActive Boolean @default(true) @map("perm_is_active")
+  permId            String             @id @map("perm_id") @db.VarChar(100)
+  permCdId          String             @map("perm_cd_id") @db.VarChar(100)
+  companyDepartment CompanyDepartments @relation(fields: [permCdId], references: [cdId])
+  permFolderId      String             @map("perm_folder_id") @db.VarChar(100)
+  folder            Folders            @relation(fields: [permFolderId], references: [folderId])
+  permIsActive      Boolean            @default(true) @map("perm_is_active")
+  Users             Users?             @relation(fields: [usersUserId], references: [userId])
+  usersUserId       String?            @db.VarChar(100)
 }
 
 model UserRoles {
@@ -31,18 +33,20 @@ model UserRoles {
 }
 
 model Users {
-  userId       String        @id @map("user_id") @db.VarChar(100)
-  userFullname String        @map("user_fullname") @db.VarChar(60)
-  userUsername String        @unique @map("user_username") @db.VarChar(60)
-  userPassword String        @map("user_password") @db.VarChar(60)
-  userRoleId   String        @map("user_role_id") @db.VarChar(60)
-  role         UserRoles     @relation(fields: [userRoleId], references: [urId])
-  userIsActive Boolean       @default(true) @map("user_is_active")
-  userLogs     UserLogs[]
-  files        Files[]
-  folders      Folders[]
-  Revisions    Revisions[]
-  permissions  Permissions[]
+  userId            String             @id @map("user_id") @db.VarChar(100)
+  userFullname      String             @map("user_fullname") @db.VarChar(60)
+  userUsername      String             @unique @map("user_username") @db.VarChar(60)
+  userPassword      String             @map("user_password") @db.VarChar(60)
+  userRoleId        String             @map("user_role_id") @db.VarChar(60)
+  role              UserRoles          @relation(fields: [userRoleId], references: [urId])
+  userIsActive      Boolean            @default(true) @map("user_is_active")
+  userCdId          String             @map("user_cd_id") @db.VarChar(100)
+  companyDepartment CompanyDepartments @relation(fields: [userCdId], references: [cdId])
+  userLogs          UserLogs[]
+  files             Files[]
+  folders           Folders[]
+  Revisions         Revisions[]
+  permissions       Permissions[]
 }
 
 model Files {
@@ -92,12 +96,14 @@ model Departments {
 }
 
 model CompanyDepartments {
-  cdId        String      @id @map("cd_id") @db.VarChar(100)
-  cdCompId    String      @map("cd_comp_id") @db.VarChar(100)
-  companies   Companies   @relation(fields: [cdCompId], references: [compId])
-  cdDeptId    String      @map("cd_dept_id") @db.VarChar(100)
-  departments Departments @relation(fields: [cdDeptId], references: [deptId])
-  cdIsActive  Boolean     @default(true)
+  cdId        String        @id @map("cd_id") @db.VarChar(100)
+  cdCompId    String        @map("cd_comp_id") @db.VarChar(100)
+  companies   Companies     @relation(fields: [cdCompId], references: [compId])
+  cdDeptId    String        @map("cd_dept_id") @db.VarChar(100)
+  departments Departments   @relation(fields: [cdDeptId], references: [deptId])
+  cdIsActive  Boolean       @default(true)
+  users       Users[]
+  Permissions Permissions[]
 }
 
 model UserLogs {
