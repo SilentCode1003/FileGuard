@@ -7,6 +7,7 @@ import {
   getFilesByFolderId,
   getRevisionsByFileId,
   searchFiles,
+  uploadFile,
 } from '../controller/files.controller'
 import { previewFileAuth } from '../middlewares/previewFile.middleware'
 
@@ -18,11 +19,17 @@ filesRouter.get('/search-files', searchFiles)
 
 filesRouter.post('/', createFile)
 
+filesRouter.post('/upload-files', uploadFile)
+
 filesRouter.get('/revisions', getRevisionsByFileId)
 
 filesRouter.post('/revisions', createRevisions)
 
 filesRouter.get('/advanced-search', advancedSearch)
+
+filesRouter.put('/')
+
+filesRouter.put('/move')
 
 filesRouter.use(
   '/preview',
