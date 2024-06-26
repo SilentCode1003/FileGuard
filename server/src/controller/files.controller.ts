@@ -14,7 +14,9 @@ import {
   getFilesByFolderIdSchema,
   getFilesByPathSchema,
   getRevisionsByFileIdSchema,
+  moveFileSchema,
   searchFilesSchema,
+  updateFileSchema,
 } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
 import { nanoid } from '../util/nano.util'
@@ -719,5 +721,47 @@ export const advancedSearch: RequestHandler = async (req, res) => {
   } catch (err) {
     // TODO: Handle errors
     res.status(500).json({ message: err })
+  }
+}
+
+export const updateFile: RequestHandler = async (req, res) => {
+  const validatedBody = updateFileSchema.safeParse(req.body)
+
+  if (!validatedBody.success) {
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
+  }
+
+  try {
+    const file = await prisma.files.update({
+      where: {
+        fileId: validatedBody.data.fileId,
+      },
+      data: {
+        fileName: validatedBody.data.fileName,
+      },
+    })
+    return res.status(200).json({ data: file })
+  } catch (error) {
+    return res.status(500).json({ message: error })
+  }
+}
+
+export const moveFile: RequestHandler = async (req, res) => {
+  const validatedBody = moveFileSchema.safeParse(req.body)
+
+  if (!validatedBody.success) {
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
+  }
+
+  try {
+    const file = await prisma.files.update({
+      where: {
+        fileId: validatedBody.data.fileId,
+      },
+      data: validatedBody.data,
+    })
+    return res.status(200).json({ data: file })
+  } catch (error) {
+    return res.status(500).json({ message: error })
   }
 }
