@@ -149,7 +149,7 @@ export const createFolder: RequestHandler = async (req, res) => {
         where: {
           AND: [
             {
-              folderPath: `/${validatedBody.data.folderPath}`,
+              folderParentId: validatedBody.data.folderParentId ?? null,
             },
             {
               folderName: validatedBody.data.folderName,
