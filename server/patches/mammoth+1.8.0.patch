@@ -1,0 +1,14 @@
+diff --git a/node_modules/mammoth/lib/xml/nodes.js b/node_modules/mammoth/lib/xml/nodes.js
+index 76f5fd7..2fcfacf 100644
+--- a/node_modules/mammoth/lib/xml/nodes.js
++++ b/node_modules/mammoth/lib/xml/nodes.js
+@@ -51,7 +51,8 @@ Element.prototype.text = function() {
+     if (this.children.length === 0) {
+         return "";
+     } else if (this.children.length !== 1 || this.children[0].type !== "text") {
+-        throw new Error("Not implemented");
++        // throw new Error("Not implemented");
++        return ""
+     }
+     return this.children[0].value;
+ };
