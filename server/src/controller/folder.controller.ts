@@ -5,6 +5,7 @@ import { CONFIG } from '../config/env.config'
 import { prisma } from '../db/prisma'
 import {
   createFolderSchema,
+  getFolderBreadcrumbSchema,
   getFoldersByParentIdSchema,
   getFoldersByPathSchema,
   moveFolderSchema,
@@ -27,6 +28,49 @@ export const getFoldersByPath: RequestHandler = async (req, res) => {
       },
     })
     return res.status(200).json({ data: folders })
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message })
+    }
+    return res.status(500).json({ message: error })
+  }
+}
+
+export const getFolderBreadcrumb: RequestHandler = async (req, res) => {
+  const validatedBody = getFolderBreadcrumbSchema.safeParse(req.query)
+
+  if (!validatedBody.success) {
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
+  }
+
+  try {
+    const breadCrumb: Array<{
+      folderId: string
+      folderName: string
+    }> = []
+    let folder = await prisma.folders.findUnique({
+      where: {
+        folderId: validatedBody.data.folderId,
+      },
+    })
+
+    while (folder?.folderParentId) {
+      breadCrumb.push({
+        folderId: folder.folderId,
+        folderName: folder.folderName,
+      })
+      folder = await prisma.folders.findUnique({
+        where: {
+          folderId: folder.folderParentId,
+        },
+      })
+    }
+
+    breadCrumb.push({
+      folderId: folder!.folderId,
+      folderName: folder!.folderName,
+    })
+    return res.status(200).json({ data: breadCrumb })
   } catch (error) {
     if (error instanceof Error) {
       return res.status(400).json({ message: error.message })
