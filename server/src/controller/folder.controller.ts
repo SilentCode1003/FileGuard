@@ -7,6 +7,9 @@ import {
   createFolderSchema,
   getFoldersByParentIdSchema,
   getFoldersByPathSchema,
+  moveFolderSchema,
+  updateFolderPermissionsSchema,
+  updateFolderSchema,
 } from '../schema/folder.schema'
 import { nanoid } from '../util/nano.util'
 
@@ -150,6 +153,97 @@ export const createFolder: RequestHandler = async (req, res) => {
 
       return res.status(200).json({ data: folder })
     })
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message })
+    }
+    return res.status(500).json({ message: error })
+  }
+}
+
+export const updateFolder: RequestHandler = async (req, res) => {
+  const validatedBody = updateFolderSchema.safeParse(req.body)
+
+  if (!validatedBody.success) {
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
+  }
+  try {
+    const folder = await prisma.folders.update({
+      where: {
+        folderId: validatedBody.data.folderId,
+      },
+      data: validatedBody.data,
+    })
+    return res.status(200).json({ data: folder })
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message })
+    }
+    return res.status(500).json({ message: error })
+  }
+}
+
+export const updateFolderPermissions: RequestHandler = async (req, res) => {
+  const validatedBody = updateFolderPermissionsSchema.safeParse(req.body)
+
+  if (!validatedBody.success) {
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
+  }
+  try {
+    const permissions = await prisma.permissions.findMany({
+      where: {
+        permFolderId: validatedBody.data.folderId,
+      },
+    })
+
+    const removedPermissions = permissions.filter((permission) =>
+      validatedBody.data.cdIds.some((cdId) => cdId === permission.permCdId),
+    )
+
+    await prisma.permissions.deleteMany({
+      where: {
+        permId: {
+          in: removedPermissions.map((permission) => permission.permId),
+        },
+      },
+    })
+
+    const newPermissions = validatedBody.data.cdIds.map((cdId) => {
+      const newPermId = nanoid()
+
+      return {
+        permId: newPermId,
+        permFolderId: validatedBody.data.folderId,
+        permCdId: cdId,
+      }
+    })
+
+    await prisma.permissions.createMany({
+      data: newPermissions,
+    })
+    return res.status(200).json({ data: newPermissions })
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message })
+    }
+    return res.status(500).json({ message: error })
+  }
+}
+
+export const moveFolder: RequestHandler = async (req, res) => {
+  const validatedBody = moveFolderSchema.safeParse(req.body)
+
+  if (!validatedBody.success) {
+    return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
+  }
+  try {
+    const folder = await prisma.folders.update({
+      where: {
+        folderId: validatedBody.data.folderId,
+      },
+      data: validatedBody.data,
+    })
+    return res.status(200).json({ data: folder })
   } catch (error) {
     if (error instanceof Error) {
       return res.status(400).json({ message: error.message })

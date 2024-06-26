@@ -21,3 +21,41 @@ export const getFoldersByPathSchema = z.object({
 export const getFoldersByParentIdSchema = z.object({
   folderParentId: z.string().optional(),
 })
+
+export const updateFolderSchema = z.object({
+  folderId: z
+    .string({
+      required_error: 'folderId is required',
+    })
+    .nanoid(),
+  folderName: z.string().trim().min(1),
+  folderUserId: z
+    .string({
+      required_error: 'folderUserId is required',
+    })
+    .nanoid(),
+})
+
+export const updateFolderPermissionsSchema = z.object({
+  folderId: z
+    .string({
+      required_error: 'folderId is required',
+    })
+    .nanoid(),
+  cdIds: z.array(z.string().nanoid()),
+})
+
+export const moveFolderSchema = z.object({
+  folderId: z
+    .string({
+      required_error: 'folderId is required',
+    })
+    .nanoid(),
+  folderPath: z.string().trim().min(1),
+  folderParentId: z
+    .string({
+      message: 'folderParentId is required',
+    })
+    .nanoid(),
+  folderDepth: z.number(),
+})
