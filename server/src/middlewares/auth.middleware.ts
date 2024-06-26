@@ -28,6 +28,10 @@ export const serviceAuth: RequestHandler = async (req, res, next) => {
     where: {
       userUsername: validatedBody.data.username,
     },
+    include: {
+      role: true,
+      companyDepartment: true,
+    },
   })
 
   if (!user) {
@@ -35,7 +39,7 @@ export const serviceAuth: RequestHandler = async (req, res, next) => {
   }
 
   req.context = {
-    user: user,
+    user,
   }
 
   return next()

@@ -1,8 +1,9 @@
+import type { CompanyDepartments, UserRoles, Users } from '@prisma/client'
 import fs from 'fs'
-import { prisma } from '../db/prisma'
-import { nanoid } from './nano.util'
 import { writeFile } from 'fs/promises'
 import { CONFIG } from '../config/env.config'
+import { prisma } from '../db/prisma'
+import { nanoid } from './nano.util'
 
 export const getFolderPath = (folderPath: string) => {
   const initPath = folderPath.split('/')
@@ -13,7 +14,18 @@ export const getFolderPath = (folderPath: string) => {
 
   return finalPath
 }
-export const createFolder = async (dir: any, folderDepth: number, folderUserId: string) => {
+export const createFolder = async (
+  dir: any,
+  folderDepth: number,
+  folderUserId: string,
+  user: Omit<
+    Users & {
+      role: UserRoles
+      companyDepartment: CompanyDepartments
+    },
+    'userPassword'
+  >,
+) => {
   const folderName = /[\s\w]+$/gi.exec(dir)! // regex to get last /folder as folderName
 
   const newFolderId = nanoid()
@@ -37,6 +49,7 @@ export const createFolder = async (dir: any, folderDepth: number, folderUserId: 
       return
     }
 
+    let folder
     if (folderDepth > 0) {
       const parentfolderName = /[\s\w]+$/gi.exec(folderPath)! // regex to get last /folder as folderName
       const parentFolder = await prisma.folders.findFirst({
@@ -52,7 +65,7 @@ export const createFolder = async (dir: any, folderDepth: number, folderUserId: 
         },
       })
 
-      await prisma.folders.create({
+      folder = await prisma.folders.create({
         data: {
           folderName: folderName[0]!,
           folderDepth: folderDepth,
@@ -63,7 +76,7 @@ export const createFolder = async (dir: any, folderDepth: number, folderUserId: 
         },
       })
     } else {
-      await prisma.folders.create({
+      folder = await prisma.folders.create({
         data: {
           folderName: folderName[folderName.length - 1]!,
           folderDepth: folderDepth,
@@ -71,6 +84,24 @@ export const createFolder = async (dir: any, folderDepth: number, folderUserId: 
           folderPath,
           folderUserId,
         },
+      })
+    }
+    if (user.role.urName !== 'admin') {
+      const users = await prisma.users.findMany({
+        where: {
+          companyDepartment: user.companyDepartment,
+        },
+      })
+      await prisma.permissions.createMany({
+        data: users.map((user) => {
+          const newPermId = nanoid()
+
+          return {
+            permId: newPermId,
+            permFolderId: folder.folderId,
+            permCdId: user.userCdId,
+          }
+        }),
       })
     }
 
