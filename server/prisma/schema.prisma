@@ -21,8 +21,6 @@ model Permissions {
   permFolderId      String             @map("perm_folder_id") @db.VarChar(100)
   folder            Folders            @relation(fields: [permFolderId], references: [folderId])
   permIsActive      Boolean            @default(true) @map("perm_is_active")
-  Users             Users?             @relation(fields: [usersUserId], references: [userId])
-  usersUserId       String?            @db.VarChar(100)
 }
 
 model UserRoles {
@@ -46,7 +44,7 @@ model Users {
   files             Files[]
   folders           Folders[]
   Revisions         Revisions[]
-  permissions       Permissions[]
+  
 }
 
 model Files {

@@ -69,3 +69,14 @@ export const advancedSearchSchema = z.object({
   toDate: z.string().date().optional(),
   keyword: z.string(),
 })
+
+export const updateFileSchema = z.object({
+  fileId: z.string({ required_error: 'fileId is required' }).nanoid(),
+  fileName: z.string().optional(),
+})
+
+export const moveFileSchema = z.object({
+  fileId: z.string({ required_error: 'fileId is required' }).nanoid(),
+  fileFolderId: z.string({ required_error: 'folderId is required' }).nanoid(),
+  filePath: z.string(),
+})
