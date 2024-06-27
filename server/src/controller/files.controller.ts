@@ -20,6 +20,7 @@ import {
 } from '../schema/files.schema'
 import { createFolder, decodeBase64ToFile, getFolderPath } from '../util/customhelper.js'
 import { nanoid } from '../util/nano.util'
+import { wss } from '..'
 
 export const getFilesByPath: RequestHandler = async (req, res) => {
   const validatedBody = getFilesByPathSchema.safeParse(req.query)
@@ -52,6 +53,9 @@ export const getFilesByPath: RequestHandler = async (req, res) => {
 }
 
 export const getFilesByFolderId: RequestHandler = async (req, res) => {
+  wss.clients.forEach((client) => {
+    client.send(JSON.stringify({ type: 'getFilesByFolderId' }))
+  })
   const validatedBody = getFilesByFolderIdSchema.safeParse(req.query)
 
   if (!validatedBody.success) {
