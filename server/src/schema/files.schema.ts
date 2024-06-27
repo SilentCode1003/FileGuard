@@ -34,7 +34,7 @@ export const getFilesByPathSchema = z.object({
 })
 
 export const getFilesByFolderIdSchema = z.object({
-  fileFolderId: z.string({ required_error: 'fileFolderId is required' }).nanoid(),
+  fileFolderId: z.string({ required_error: 'fileFolderId is required' }).nanoid().optional(),
 })
 
 export const getRevisionsByFileIdSchema = z.object({

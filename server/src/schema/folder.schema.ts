@@ -59,3 +59,11 @@ export const moveFolderSchema = z.object({
     .nanoid(),
   folderDepth: z.number(),
 })
+
+export const getFolderBreadcrumbSchema = z.object({
+  folderId: z
+    .string({
+      required_error: 'folderId is required',
+    })
+    .nanoid(),
+})

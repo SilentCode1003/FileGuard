@@ -102,6 +102,7 @@ model CompanyDepartments {
   cdIsActive  Boolean       @default(true)
   users       Users[]
   Permissions Permissions[]
+  @@unique([cdCompId, cdDeptId])
 }
 
 model UserLogs {

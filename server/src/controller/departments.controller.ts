@@ -1,8 +1,8 @@
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import type { RequestHandler } from 'express'
 import { prisma } from '../db/prisma'
 import { createDepartmentSchema, departmentIdSchema } from '../schema/departments.schema'
 import { nanoid } from '../util/nano.util'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 
 export const getAllDepartments: RequestHandler = async (req, res, next) => {
   try {
@@ -21,31 +21,46 @@ export const createDepartment: RequestHandler = async (req, res, next) => {
     return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
   }
   try {
-    const newDeptId = nanoid()
-    const department = await prisma.departments.create({
-      data: {
+    let department = await prisma.departments.findUnique({
+      where: {
         deptName: validatedBody.data.deptName,
-        deptId: newDeptId,
-        companyDepartments: {
-          create: {
-            cdId: nanoid(),
-            cdCompId: validatedBody.data.compId,
-          },
+      },
+    })
+
+    if (!department) {
+      const newDeptId = nanoid()
+      department = await prisma.departments.create({
+        data: {
+          deptName: validatedBody.data.deptName,
+          deptId: newDeptId,
         },
+      })
+    }
+
+    const checkCompDept = await prisma.companyDepartments.findUnique({
+      where: {
+        cdCompId_cdDeptId: {
+          cdCompId: validatedBody.data.compId,
+          cdDeptId: department.deptId,
+        },
+      },
+    })
+    if (checkCompDept) {
+      return res.status(400).json({ message: 'Department already exist in company' })
+    }
+    await prisma.companyDepartments.create({
+      data: {
+        cdId: nanoid(),
+        cdCompId: validatedBody.data.compId,
+        cdDeptId: department.deptId,
       },
     })
 
     return res.status(200).json({ data: department })
   } catch (err) {
-    if (err instanceof PrismaClientKnownRequestError) {
-      switch (err.code) {
-        case 'P2002':
-          return res.status(400).json({ message: 'Department already exists' })
-        case 'P2003':
-          return res.status(400).json({ message: 'Foreign key does not exist' })
-        default:
-          return res.status(400).json({ message: 'Prisma client error' })
-      }
+    if (err instanceof Error) {
+      console.log(err)
+      return res.status(400).json({ message: err.message })
     }
   }
 }
