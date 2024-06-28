@@ -7,9 +7,7 @@ export const auth: RequestHandler = async (req, res, next) => {
     return res.status(401).json({ message: 'Unauthorized' })
   }
 
-  req.context = {
-    user: req.session.user,
-  }
+  req.context.user = req.session.user
 
   return next()
 }
@@ -38,9 +36,7 @@ export const serviceAuth: RequestHandler = async (req, res, next) => {
     return res.status(401).json({ message: 'Unauthorized' })
   }
 
-  req.context = {
-    user,
-  }
+  req.context.user = user
 
   return next()
 }
