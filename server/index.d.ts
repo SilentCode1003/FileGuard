@@ -1,4 +1,6 @@
 import type { CompanyDepartments, UserRoles, Users } from '@prisma/client'
+import type { IncomingMessage } from 'http'
+import type WebSocket from 'ws'
 
 declare module 'express-session' {
   interface SessionData {
@@ -23,6 +25,7 @@ declare global {
           },
           'userPassword'
         >
+        wss: WebSocket.Server<typeof WebSocket.WebSocket, typeof IncomingMessage>
       }
     }
   }
