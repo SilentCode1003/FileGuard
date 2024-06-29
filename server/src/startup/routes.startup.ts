@@ -8,12 +8,12 @@ import { folderFilesRouter } from '../routes/folderFiles.route'
 import { foldersRouter } from '../routes/folders.route'
 import { healthRouter } from '../routes/health.route'
 //import { fileRouter } from '../routes/file.route'
+import { companyRouter } from '../routes/companies.route'
+import { companyDepartmentRouter } from '../routes/companyDepartment.route'
 import { userLogsRouter } from '../routes/logs.route'
 import { permissionsRouter } from '../routes/permissions.route'
 import { userRolesRouter } from '../routes/roles.route'
 import { usersRouter } from '../routes/users.route'
-import { companyRouter } from '../routes/companies.route'
-import { companyDepartmentRouter } from '../routes/companyDepartment.route'
 
 export const initRoutes = (app: Express) => {
   app.post('/upload', serviceAuth, uploadFile)

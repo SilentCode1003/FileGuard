@@ -11,8 +11,17 @@ import { initProxy } from './startup/proxy.startup'
 import { initRoutes } from './startup/routes.startup'
 import { initSession } from './startup/session.startup'
 import { logger } from './util/logger.util'
+import { createServer } from 'http'
+import { WebSocketServer } from 'ws'
+import { initWebSocket } from './startup/webSocket.startup'
 
 const app = express()
+const httpServer = createServer(app)
+const wss = new WebSocketServer({ server: httpServer })
+
+wss.on('connection', (ws) => {
+  console.log('new connection')
+})
 
 const startServer = () => {
   logger.info('--------------------Server starting--------------------')
@@ -42,6 +51,9 @@ const startServer = () => {
   logger.info('Adding session middleware')
   initSession(app)
 
+  logger.info('Adding socket middleware')
+  initWebSocket(wss, app)
+
   logger.info('Adding routes')
   initRoutes(app)
 
@@ -56,7 +68,7 @@ const startServer = () => {
   logger.info('Adding errorController')
   app.use(errorController)
 
-  const server = app.listen(CONFIG.SERVER_PORT, () => {
+  const server = httpServer.listen(CONFIG.SERVER_PORT, () => {
     logger.info(`Server listening on port ${CONFIG.SERVER_PORT}`)
   })
 

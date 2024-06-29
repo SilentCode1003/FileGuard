@@ -4,7 +4,7 @@ import {
   getAllDepartments,
   getDepartmentById,
   toggleDepartmentById,
-  updateDepartmentById,
+  updateDepartment,
 } from '../controller/departments.controller'
 
 export const departmentsRouter = express.Router()
@@ -15,6 +15,6 @@ departmentsRouter.post('/', createDepartment)
 
 departmentsRouter.get('/:id', getDepartmentById)
 
-departmentsRouter.put('/:id', updateDepartmentById)
+departmentsRouter.put('/:id', updateDepartment)
 
 departmentsRouter.put('/:id/toggle', toggleDepartmentById)
