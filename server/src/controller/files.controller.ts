@@ -52,6 +52,9 @@ export const getFilesByPath: RequestHandler = async (req, res) => {
 }
 
 export const getFilesByFolderId: RequestHandler = async (req, res) => {
+  req.context.wss.clients.forEach((client) => {
+    client.send(JSON.stringify({ type: 'getFilesByFolderId' }))
+  })
   const validatedBody = getFilesByFolderIdSchema.safeParse(req.query)
 
   if (!validatedBody.success) {
