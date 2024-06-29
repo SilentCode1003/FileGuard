@@ -89,13 +89,7 @@ export const getDepartmentById: RequestHandler = async (req, res, next) => {
   }
 }
 
-export const updateDepartmentById: RequestHandler = async (req, res, next) => {
-  const validatedId = departmentIdSchema.safeParse(req.params)
-
-  if (!validatedId.success) {
-    return res.status(400).json({ message: validatedId.error.errors[0]?.message })
-  }
-
+export const updateDepartment: RequestHandler = async (req, res, next) => {
   const validatedBody = createDepartmentSchema.safeParse(req.body)
 
   if (!validatedBody.success) {
@@ -105,7 +99,7 @@ export const updateDepartmentById: RequestHandler = async (req, res, next) => {
   try {
     const department = await prisma.departments.update({
       where: {
-        deptId: validatedId.data.id,
+        deptId: validatedBody.data.compId,
       },
       data: {
         ...validatedBody.data,
