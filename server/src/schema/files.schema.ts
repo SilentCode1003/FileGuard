@@ -61,10 +61,10 @@ export const previewFileSchema = z.object({
 })
 
 export const advancedSearchSchema = z.object({
-  companyName: z.string().optional(),
+  compId: z.string().optional(),
   fileType: z.string().optional(),
   documentType: z.string().optional(),
-  department: z.string().optional(),
+  deptId: z.string().optional(),
   fromDate: z.string().date().optional(),
   toDate: z.string().date().optional(),
   keyword: z.string(),
