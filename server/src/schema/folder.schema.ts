@@ -65,5 +65,6 @@ export const getFolderBreadcrumbSchema = z.object({
     .string({
       required_error: 'folderId is required',
     })
-    .nanoid(),
+    .nanoid()
+    .optional(),
 })
