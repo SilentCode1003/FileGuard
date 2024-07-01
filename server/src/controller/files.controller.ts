@@ -668,36 +668,53 @@ export const advancedSearch: RequestHandler = async (req, res) => {
   }
 
   try {
+    const companyDepartments = await prisma.companyDepartments.findMany({
+      where: {
+        AND: {
+          cdCompId: validatedQueryParams.data.compId,
+          cdDeptId: validatedQueryParams.data.deptId,
+        },
+      },
+    })
+
+    const companyDepartmentIds = companyDepartments.map(
+      (companyDepartment) => companyDepartment.cdId,
+    )
+
+    const folders = await prisma.folders.findMany({
+      where: {
+        AND: {
+          folderIsActive: true,
+          permissions: {
+            some: {
+              permCdId: {
+                in: companyDepartmentIds,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        folderDepth: 'asc',
+      },
+    })
+
+    const folderIds = folders.map((folder) => folder.folderId)
+
     const files = await prisma.files.findMany({
       where: {
         AND: [
+          folderIds.length > 0 && req.context.user.role.urName !== 'admin'
+            ? {
+                fileFolderId: {
+                  in: folderIds,
+                },
+              }
+            : {},
           validatedQueryParams.data.fileType
             ? {
                 fileName: {
                   endsWith: `.${validatedQueryParams.data.fileType}`,
-                },
-              }
-            : {},
-          validatedQueryParams.data.companyName
-            ? {
-                filePath: {
-                  startsWith: `/${validatedQueryParams.data.companyName}`,
-                },
-              }
-            : {},
-          validatedQueryParams.data.fromDate && validatedQueryParams.data.toDate
-            ? {
-                fileCreatedAt: {
-                  gte: new Date(validatedQueryParams.data.fromDate),
-                  lte: new Date(validatedQueryParams.data.toDate),
-                },
-              }
-            : {},
-          // TODO: fix this
-          validatedQueryParams.data.department
-            ? {
-                filePath: {
-                  contains: `/${validatedQueryParams.data.department}`,
                 },
               }
             : {},
@@ -712,7 +729,14 @@ export const advancedSearch: RequestHandler = async (req, res) => {
                 },
               }
             : {},
-          // TODO: documentType
+          validatedQueryParams.data.fromDate && validatedQueryParams.data.toDate
+            ? {
+                fileCreatedAt: {
+                  gte: new Date(validatedQueryParams.data.fromDate),
+                  lte: new Date(validatedQueryParams.data.toDate),
+                },
+              }
+            : {},
         ],
       },
       omit: {
