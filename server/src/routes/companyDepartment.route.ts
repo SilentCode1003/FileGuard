@@ -1,6 +1,7 @@
 import express from 'express'
 import {
   getAllCompanyDepartment,
+  getCompanyDepartmentByCompId,
   getCompanyDepartmentById,
   toggleCompanyDepartmentById,
   updateCompanyDepartmentById,
@@ -9,6 +10,8 @@ import {
 export const companyDepartmentRouter = express.Router()
 
 companyDepartmentRouter.get('/', getAllCompanyDepartment)
+
+companyDepartmentRouter.get('/company/:compId', getCompanyDepartmentByCompId)
 
 companyDepartmentRouter.get('/:id', getCompanyDepartmentById)
 
