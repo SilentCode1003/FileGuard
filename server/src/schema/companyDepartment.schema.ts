@@ -20,3 +20,11 @@ export const toggleCompanyDepartmentSchema = z.object({
     })
     .nanoid(),
 })
+
+export const getCompanyDepartmentByCompIdSchema = z.object({
+  compId: z
+    .string({
+      required_error: 'compId  is required',
+    })
+    .nanoid(),
+})

@@ -3,6 +3,7 @@ import type { RequestHandler } from 'express'
 import { prisma } from '../db/prisma'
 import {
   companyDepartmentIdSchema,
+  getCompanyDepartmentByCompIdSchema,
   toggleCompanyDepartmentSchema,
   updateCompanyDepartmentSchema,
 } from '../schema/companyDepartment.schema'
@@ -41,6 +42,29 @@ export const getCompanyDepartmentById: RequestHandler = async (req, res, next) =
   }
 }
 
+export const getCompanyDepartmentByCompId: RequestHandler = async (req, res, next) => {
+  const validatedId = getCompanyDepartmentByCompIdSchema.safeParse(req.params)
+
+  if (!validatedId.success) {
+    return res.status(400).json({ message: validatedId.error.errors[0]?.message })
+  }
+
+  try {
+    const companyDepartment = await prisma.companyDepartments.findMany({
+      where: {
+        cdCompId: validatedId.data.compId,
+      },
+    })
+
+    if (!companyDepartment || companyDepartment.length < 1) {
+      return res.status(404).json({ message: 'companyDepartment not found' })
+    }
+
+    res.status(200).json({ data: companyDepartment })
+  } catch (err) {
+    // TODO: Handle errors
+  }
+}
 export const updateCompanyDepartmentById: RequestHandler = async (req, res) => {
   const validatedBody = updateCompanyDepartmentSchema.safeParse({
     ...req.body,
