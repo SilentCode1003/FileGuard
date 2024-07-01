@@ -44,6 +44,11 @@ export const getFolderBreadcrumb: RequestHandler = async (req, res) => {
   }
 
   try {
+    if (!validatedBody.data.folderId)
+      return res.status(200).json({
+        data: null,
+      })
+
     const breadCrumb: Array<{
       folderId: string
       folderName: string
