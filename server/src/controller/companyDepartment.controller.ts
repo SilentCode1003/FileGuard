@@ -10,7 +10,12 @@ import {
 
 export const getAllCompanyDepartment: RequestHandler = async (req, res, next) => {
   try {
-    const companyDepartment = await prisma.companyDepartments.findMany()
+    const companyDepartment = await prisma.companyDepartments.findMany({
+      include: {
+        companies: true,
+        departments: true,
+      },
+    })
 
     res.status(200).json({ data: companyDepartment })
   } catch (err) {
@@ -53,6 +58,10 @@ export const getCompanyDepartmentByCompId: RequestHandler = async (req, res, nex
     const companyDepartment = await prisma.companyDepartments.findMany({
       where: {
         cdCompId: validatedId.data.compId,
+      },
+      include: {
+        companies: true,
+        departments: true,
       },
     })
 
