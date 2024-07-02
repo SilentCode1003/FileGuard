@@ -720,13 +720,22 @@ export const advancedSearch: RequestHandler = async (req, res) => {
             : {},
           validatedQueryParams.data.keyword
             ? {
-                fileContents: {
-                  some: {
-                    fcContent: {
+                OR: [
+                  {
+                    fileContents: {
+                      some: {
+                        fcContent: {
+                          contains: validatedQueryParams.data.keyword,
+                        },
+                      },
+                    },
+                  },
+                  {
+                    fileName: {
                       contains: validatedQueryParams.data.keyword,
                     },
                   },
-                },
+                ],
               }
             : {},
           validatedQueryParams.data.fromDate && validatedQueryParams.data.toDate
