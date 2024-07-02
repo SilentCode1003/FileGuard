@@ -21,6 +21,8 @@ model Permissions {
   permFolderId      String             @map("perm_folder_id") @db.VarChar(100)
   folder            Folders            @relation(fields: [permFolderId], references: [folderId])
   permIsActive      Boolean            @default(true) @map("perm_is_active")
+
+  @@unique([permFolderId, permCdId])
 }
 
 model UserRoles {
@@ -44,7 +46,6 @@ model Users {
   files             Files[]
   folders           Folders[]
   Revisions         Revisions[]
-  
 }
 
 model Files {
@@ -102,6 +103,7 @@ model CompanyDepartments {
   cdIsActive  Boolean       @default(true)
   users       Users[]
   Permissions Permissions[]
+
   @@unique([cdCompId, cdDeptId])
 }
 
