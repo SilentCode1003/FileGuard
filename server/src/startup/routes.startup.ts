@@ -4,10 +4,8 @@ import { auth, serviceAuth } from '../middlewares/auth.middleware'
 import { authRouter } from '../routes/auth.route'
 import { departmentsRouter } from '../routes/departments.route'
 import { filesRouter } from '../routes/files.route'
-import { folderFilesRouter } from '../routes/folderFiles.route'
 import { foldersRouter } from '../routes/folders.route'
 import { healthRouter } from '../routes/health.route'
-//import { fileRouter } from '../routes/file.route'
 import { companyRouter } from '../routes/companies.route'
 import { companyDepartmentRouter } from '../routes/companyDepartment.route'
 import { userLogsRouter } from '../routes/logs.route'
@@ -22,7 +20,6 @@ export const initRoutes = (app: Express) => {
   app.use('/health', healthRouter)
   app.use('/files', filesRouter)
   app.use('/folders', foldersRouter)
-  app.use('/folder-files', folderFilesRouter)
   app.use('/users', usersRouter)
   app.use('/user-roles', userRolesRouter)
   app.use('/permissions', permissionsRouter)
