@@ -35,7 +35,7 @@ export const createUser: RequestHandler = async (req, res) => {
       data: {
         ...validatedBody.data,
         userId: newUserId,
-        userPassword: await bcrypt.hash('password', 10),
+        userPassword: await bcrypt.hash(validatedBody.data.userPassword, 10),
         userRoleId: validatedBody.data.userRoleId,
       },
       omit: {
