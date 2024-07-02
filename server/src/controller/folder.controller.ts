@@ -239,38 +239,86 @@ export const updateFolderPermissions: RequestHandler = async (req, res) => {
     return res.status(400).json({ message: validatedBody.error.errors[0]?.message })
   }
   try {
-    const permissions = await prisma.permissions.findMany({
-      where: {
-        permFolderId: validatedBody.data.folderId,
-      },
-    })
-
-    const removedPermissions = permissions.filter((permission) =>
-      validatedBody.data.cdIds.some((cdId) => cdId === permission.permCdId),
-    )
-
-    await prisma.permissions.deleteMany({
-      where: {
-        permId: {
-          in: removedPermissions.map((permission) => permission.permId),
+    await prisma.$transaction(async (prisma) => {
+      const permissions = await prisma.permissions.findMany({
+        where: {
+          permFolderId: validatedBody.data.folderId,
         },
-      },
-    })
+      })
 
-    const newPermissions = validatedBody.data.cdIds.map((cdId) => {
-      const newPermId = nanoid()
+      const removedPermissions = permissions.filter((permission) =>
+        validatedBody.data.cdIds.some((cdId) => cdId === permission.permCdId),
+      )
 
-      return {
-        permId: newPermId,
-        permFolderId: validatedBody.data.folderId,
-        permCdId: cdId,
+      await prisma.permissions.deleteMany({
+        where: {
+          permId: {
+            in: removedPermissions.map((permission) => permission.permId),
+          },
+        },
+      })
+
+      const newPermissions = validatedBody.data.cdIds.map((cdId) => {
+        const newPermId = nanoid()
+
+        return {
+          permId: newPermId,
+          permFolderId: validatedBody.data.folderId,
+          permCdId: cdId,
+        }
+      })
+
+      await prisma.permissions.createMany({
+        data: newPermissions,
+      })
+
+      const folder = await prisma.folders.findUnique({
+        where: {
+          folderId: validatedBody.data.folderId,
+        },
+      })
+
+      // add new permissions to parent folders
+
+      let parentFolder = await prisma.folders.findFirst({
+        where: folder?.folderParentId
+          ? {
+              folderId: folder.folderParentId,
+            }
+          : {},
+      })
+      while (parentFolder?.folderParentId) {
+        if (!parentFolder) break
+        await prisma.permissions.createMany({
+          data: newPermissions.map((permission) => {
+            return {
+              permId: nanoid(),
+              permFolderId: parentFolder!.folderId,
+              permCdId: permission.permCdId,
+            }
+          }),
+          skipDuplicates: true,
+        })
+        parentFolder = await prisma.folders.findFirst({
+          where: {
+            folderId: parentFolder.folderParentId,
+          },
+        })
       }
-    })
 
-    await prisma.permissions.createMany({
-      data: newPermissions,
+      await prisma.permissions.createMany({
+        data: newPermissions.map((permission) => {
+          return {
+            permId: nanoid(),
+            permFolderId: parentFolder!.folderId,
+            permCdId: permission.permCdId,
+          }
+        }),
+        skipDuplicates: true,
+      })
+
+      return res.status(200).json({ data: newPermissions })
     })
-    return res.status(200).json({ data: newPermissions })
   } catch (error) {
     if (error instanceof Error) {
       return res.status(400).json({ message: error.message })
